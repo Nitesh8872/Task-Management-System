@@ -4,7 +4,14 @@
 
 A Task Management System built using the MERN Stack (MongoDB, Express.js, React.js, and Node.js).
 
-The application allows users to manage tasks efficiently with secure authentication, task creation, task updates, and task tracking.
+The application allows users to:
+
+* Register and Login securely using JWT Authentication
+* Create personal tasks
+* View their own tasks
+* Update task details and status
+* Delete tasks
+* Manage tasks securely with protected routes
 
 ---
 
@@ -39,16 +46,19 @@ Task-Management-System/
 │   └── db.js
 │
 ├── controllers/
-│   └── userController.js
+│   ├── userController.js
+│   └── taskController.js
 │
 ├── middleware/
 │   └── authMiddleware.js
 │
 ├── models/
-│   └── User.js
+│   ├── user.js
+│   └── task.js
 │
 ├── routes/
-│   └── userRoutes.js
+│   ├── userRoutes.js
+│   └── taskRoutes.js
 │
 ├── .env
 ├── server.js
@@ -60,15 +70,13 @@ Task-Management-System/
 
 ---
 
-# Backend Setup
-
-## Environment Variables
+# Environment Variables
 
 Create a `.env` file inside the backend folder:
 
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/taskmanager
+MONGO_URI=mongodb://localhost:27017/taskmanagement
 JWT_SECRET=yourSecretKey
 ```
 
@@ -90,8 +98,6 @@ npm install nodemon --save-dev
 
 # Database Connection
 
-MongoDB connection is configured using Mongoose.
-
 Location:
 
 ```text
@@ -100,27 +106,28 @@ backend/config/db.js
 
 Features:
 
-* Connects to MongoDB
+* Connects to MongoDB using Mongoose
 * Handles connection errors
-* Loads database URI from environment variables
+* Loads connection string from environment variables
 
 ---
 
 # Express Server Configuration
-
-The Express server:
-
-* Loads environment variables using dotenv
-* Connects to MongoDB
-* Parses JSON requests using express.json()
-* Registers application routes
-* Runs on the configured port
 
 Location:
 
 ```text
 backend/server.js
 ```
+
+Features:
+
+* Loads environment variables
+* Connects MongoDB
+* Parses JSON requests
+* Registers user routes
+* Registers task routes
+* Starts Express server
 
 ---
 
@@ -131,7 +138,7 @@ backend/server.js
 Location:
 
 ```text
-backend/models/User.js
+backend/models/user.js
 ```
 
 Fields:
@@ -146,13 +153,13 @@ Fields:
 
 Features:
 
-* Email uniqueness
-* Required field validation
+* Unique email validation
+* Password hashing using bcryptjs
 * Automatic timestamps
 
 ---
 
-## User Registration API
+# User Registration API
 
 ### Endpoint
 
@@ -160,15 +167,7 @@ Features:
 POST /api/users/register
 ```
 
-### Features
-
-* Accepts user information
-* Validates required fields
-* Checks existing email
-* Hashes password using bcrypt
-* Saves user to MongoDB
-
-### Sample Request
+### Request
 
 ```json
 {
@@ -180,7 +179,7 @@ POST /api/users/register
 
 ---
 
-## User Login API
+# User Login API
 
 ### Endpoint
 
@@ -188,13 +187,7 @@ POST /api/users/register
 POST /api/users/login
 ```
 
-### Features
-
-* Verifies user email
-* Compares password using bcrypt.compare()
-* Generates JWT token on successful login
-
-### Sample Request
+### Request
 
 ```json
 {
@@ -203,15 +196,26 @@ POST /api/users/login
 }
 ```
 
+### Response
+
+Returns a JWT token:
+
+```json
+{
+  "_id": "...",
+  "name": "Nitesh",
+  "email": "nitesh@gmail.com",
+  "token": "JWT_TOKEN"
+}
+```
+
 ---
 
 # JWT Authentication
 
-JWT is used for secure user authentication.
+JWT is used for securing protected routes.
 
 ### Token Generation
-
-On successful login:
 
 ```javascript
 jwt.sign(
@@ -226,15 +230,17 @@ jwt.sign(
 ```text
 User Login
     ↓
-Generate JWT Token
+Generate JWT
     ↓
-Send Token to Frontend
+Send Token
     ↓
-Frontend Stores Token
+Store Token
     ↓
-Send Token in Future Requests
+Protected Request
     ↓
-Backend Verifies Token
+Verify Token
+    ↓
+Access Granted
 ```
 
 ---
@@ -249,59 +255,189 @@ backend/middleware/authMiddleware.js
 
 Responsibilities:
 
-* Read JWT token from request headers
-* Verify token validity
+* Read Authorization header
+* Verify JWT token
 * Extract user ID
-* Fetch user from database
+* Find user in database
 * Attach user to req.user
 * Allow access to protected routes
 
-### Protected Route Flow
+---
+
+# Task Management System
+
+## Task Model
+
+Location:
 
 ```text
-Request
-   ↓
-JWT Middleware
-   ↓
-Verify Token
-   ↓
-Attach User
-   ↓
-Controller
-   ↓
-Response
+backend/models/task.js
+```
+
+Schema:
+
+```javascript
+{
+  title,
+  description,
+  status,
+  user
+}
+```
+
+### Fields
+
+| Field       | Description         |
+| ----------- | ------------------- |
+| title       | Task title          |
+| description | Task description    |
+| status      | pending / completed |
+| user        | Reference to User   |
+
+### Status Values
+
+```javascript
+pending
+completed
+```
+
+### Relationship
+
+Each task belongs to one user.
+
+```text
+User
+ ├── Task 1
+ ├── Task 2
+ └── Task 3
 ```
 
 ---
 
-# Available API Endpoints
+# Task CRUD APIs
 
-## Test Route
+All task routes are protected.
+
+Authorization Header:
+
+```text
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+## Create Task
+
+### Endpoint
 
 ```http
-GET /
+POST /api/tasks
 ```
 
-Response:
+### Request
 
-```text
-Task Management API
+```json
+{
+  "title": "Learn JWT",
+  "description": "Implement authentication",
+  "status": "pending"
+}
 ```
 
 ---
 
-## Register User
+## Get All Tasks
+
+### Endpoint
+
+```http
+GET /api/tasks
+```
+
+### Description
+
+Returns all tasks belonging to the logged-in user.
+
+---
+
+## Update Task
+
+### Endpoint
+
+```http
+PUT /api/tasks/:id
+```
+
+### Request
+
+```json
+{
+  "status": "completed"
+}
+```
+
+### Description
+
+Updates an existing task.
+
+---
+
+## Delete Task
+
+### Endpoint
+
+```http
+DELETE /api/tasks/:id
+```
+
+### Description
+
+Deletes a task belonging to the logged-in user.
+
+---
+
+# API Summary
+
+## Public Routes
+
+### Register
 
 ```http
 POST /api/users/register
 ```
 
----
-
-## Login User
+### Login
 
 ```http
 POST /api/users/login
+```
+
+---
+
+## Protected Routes
+
+### Create Task
+
+```http
+POST /api/tasks
+```
+
+### Get Tasks
+
+```http
+GET /api/tasks
+```
+
+### Update Task
+
+```http
+PUT /api/tasks/:id
+```
+
+### Delete Task
+
+```http
+DELETE /api/tasks/:id
 ```
 
 ---
@@ -310,42 +446,54 @@ POST /api/users/login
 
 ✅ Project Setup Completed
 
+✅ MongoDB Connected
+
 ✅ Express Server Configured
 
 ✅ Environment Variables Configured
 
-✅ MongoDB Connected Successfully
-
 ✅ User Model Created
 
-✅ User Registration API Implemented
+✅ User Registration API Completed
 
-✅ Password Hashing Using bcryptjs
+✅ User Login API Completed
 
-✅ User Login API Implemented
+✅ Password Hashing Implemented
 
-✅ JWT Token Generation Implemented
+✅ JWT Authentication Implemented
 
-✅ JWT Authentication Middleware Implemented
+✅ Authentication Middleware Implemented
 
-✅ Protected Route Architecture Ready
+✅ Task Model Created
+
+✅ Create Task API Completed
+
+✅ Get Tasks API Completed
+
+✅ Update Task API Completed
+
+✅ Delete Task API Completed
+
+✅ User-Specific Task Access Implemented
+
+✅ Protected Task Routes Implemented
 
 ---
 
 # Next Steps
 
-* Create Task Model
-* Create Task CRUD APIs
-* Associate Tasks with Logged-in Users
-* Protect Task Routes Using JWT Middleware
-* Task Filtering and Status Updates
-* React Frontend Development
-* Connect Frontend with Backend APIs
+* Add Task Filtering
+* Add Search Functionality
+* Add Pagination
+* Build React Frontend
+* Connect Frontend to Backend APIs
+* Add Dashboard UI
+* Deploy Application
 
 ---
 
 # Author
 
-Nitesh Sukhwal
+**Nitesh Sukhwal**
 
 MERN Stack Internship Project
