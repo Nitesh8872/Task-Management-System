@@ -146,9 +146,30 @@ const updateUserProfile = async (req, res) => {
 };
 
 
+// Delete User Account
+const deleteUserAccount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Delete user's tasks
+        const Task = require("../models/task");
+        await Task.deleteMany({ user: userId });
+        
+        // Delete user
+        await User.findByIdAndDelete(userId);
+        
+        res.status(200).json({ message: "Account deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
 module.exports = {
     registerUser,
     loginUser,
     getCurrentUser,
     updateUserProfile,
+    deleteUserAccount,
 };

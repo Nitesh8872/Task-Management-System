@@ -29,9 +29,9 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await registerUser(formData); //removed unused variable
+      await registerUser(formData);
       alert("Registration Successful! Please log in.");
-      navigate("/login"); //removed duplicate navigate call
+      navigate("/login");
     } catch (error) {
       console.error("Registration failed:", error);
       alert("Registration Failed. Please try again.");

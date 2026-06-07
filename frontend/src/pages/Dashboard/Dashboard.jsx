@@ -5,8 +5,10 @@ import { logActivity } from "../../utils/activityLogger";
 import { useNotifications } from "../../context/NotificationContext";
 import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/formatters";
+import { TASK_STATUS } from "../../utils/taskStatus";
 import StatCard from "../../components/StatCard/StatCard";
 import ActivityList from "../../components/ActivityList/ActivityList";
+import TaskModal from "../../components/TaskModal/TaskModal";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -17,13 +19,13 @@ function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Quick form state
+  // ── Create Modal State ──
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("medium");
   const [category, setCategory] = useState("personal");
-  const [status, setStatus] = useState("pending");
 
   const fetchDashboardData = async () => {
     if (!token) return;
@@ -40,43 +42,48 @@ function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token]);
 
-  // Quick Add handler
-  const handleQuickAdd = async (e) => {
+  // Open modal with reset fields
+  const openCreateModal = () => {
+    setTitle("");
+    setDescription("");
+    setDueDate("");
+    setPriority("medium");
+    setCategory("personal");
+    setIsCreateModalOpen(true);
+  };
+
+  const closeCreateModal = () => setIsCreateModalOpen(false);
+
+  // Create Task handler (from modal)
+  const handleCreateTask = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     try {
       const newTask = await createTask(
-        { title, description, dueDate, priority, category, status },
+        { title, description, dueDate, priority, category },
         token
       );
       setTasks((prev) => [...prev, newTask]);
+      setIsCreateModalOpen(false);
 
-      logActivity(user?.id, `Created task "${title}" via dashboard quick-add`);
-      addNotification(`Quick-added task "${title}"!`, "success");
-
-      // Reset
-      setTitle("");
-      setDescription("");
-      setDueDate("");
-      setPriority("medium");
-      setCategory("personal");
-      setStatus("pending");
+      logActivity(user?.id, `Created task "${title}" via dashboard`);
+      addNotification(`Task "${title}" created successfully!`, "success");
     } catch (err) {
       console.error(err);
-      addNotification("Failed to quick-add task", "error");
+      addNotification("Failed to create task", "error");
     }
   };
 
   const handleQuickComplete = async (taskId, taskTitle) => {
     try {
-      const updated = await updateTask(taskId, { status: "completed" }, token);
+      const updated = await updateTask(taskId, { status: TASK_STATUS.COMPLETED }, token);
       setTasks((prev) => prev.map((t) => (t._id === taskId ? updated : t)));
 
-      logActivity(user?.id, `Completed task "${taskTitle}"`);
-      addNotification(`Task "${taskTitle}" completed!`, "success");
+      logActivity(user?.id, `Marked task "${taskTitle}" Completed`);
+      addNotification(`Task "${taskTitle}" marked Completed!`, "success");
     } catch (err) {
       console.error(err);
       addNotification("Failed to complete task", "error");
@@ -90,7 +97,9 @@ function Dashboard() {
 
   // ── Metrics Calculations ──
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === "completed").length;
+  const completedTasks = tasks.filter((t) => t.status === TASK_STATUS.COMPLETED).length;
+  const inProgressTasks = tasks.filter((t) => t.status === TASK_STATUS.IN_PROGRESS).length;
+  const pendingTasks = tasks.filter((t) => t.status === TASK_STATUS.PENDING).length;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -102,7 +111,7 @@ function Dashboard() {
 
   // Overdue: dueDate in the past, status is not completed
   const overdueTasks = tasks.filter((t) => {
-    if (t.status === "completed" || !t.dueDate) return false;
+    if (t.status === TASK_STATUS.COMPLETED || !t.dueDate) return false;
     const dDate = new Date(t.dueDate);
     dDate.setHours(0, 0, 0, 0);
     return dDate < today;
@@ -110,20 +119,19 @@ function Dashboard() {
 
   // Due today: dueDate is today, status is not completed
   const dueTodayTasks = tasks.filter((t) => {
-    if (t.status === "completed" || !t.dueDate) return false;
+    if (t.status === TASK_STATUS.COMPLETED || !t.dueDate) return false;
     const dDate = new Date(t.dueDate);
     dDate.setHours(0, 0, 0, 0);
     return isSameDate(dDate, today);
   }).length;
 
-  const pendingTasks = tasks.filter((t) => t.status !== "completed").length;
-
+  // Productivity score: Completed / Total × 100
   const completionPercent =
     totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
-  // Get next 3 upcoming pending tasks
+  // Get next 3 upcoming non-completed tasks
   const upcomingTasks = tasks
-    .filter((t) => t.status !== "completed" && t.dueDate)
+    .filter((t) => t.status !== TASK_STATUS.COMPLETED && t.dueDate)
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
     .slice(0, 3);
 
@@ -138,25 +146,25 @@ function Dashboard() {
       {/* Stats Cards Row */}
       <div className="stats-section-grid">
         <StatCard
-          title="Total Registered"
+          title="Total Tasks"
           value={totalTasks}
           icon="📋"
           type="primary"
           description="Total tasks on record"
         />
         <StatCard
-          title="Due Today"
-          value={dueTodayTasks}
-          icon="📅"
+          title="Pending"
+          value={pendingTasks}
+          icon="🕐"
           type="warning"
-          description="Tasks due today"
+          description="Tasks not yet started"
         />
         <StatCard
-          title="Overdue Tasks"
-          value={overdueTasks}
-          icon="⚠️"
-          type="danger"
-          description="Tasks past their due date"
+          title="In Progress"
+          value={inProgressTasks}
+          icon="⏳"
+          type="info"
+          description="Tasks actively being worked on"
         />
         <StatCard
           title="Completed"
@@ -167,72 +175,79 @@ function Dashboard() {
         />
       </div>
 
-      {/* Progress & Split Sections */}
+      {/* Two-column split: Left panel + Right Activity */}
       <div className="dashboard-main-split">
-        {/* Left Area: Quick Add & Upcoming checklist */}
+        {/* Left Area: Progress + Quick Create CTA + Upcoming */}
         <div className="dashboard-left-panel">
 
-          {/* Productivity progress */}
-          <div className="productivity-card">
-            <div className="productivity-header">
-              <h3>Workspace Completion Progress</h3>
-              <span className="completion-lbl">{completionPercent}% Completed</span>
+          {/* Workspace Completion Progress Card */}
+          <div className="workspace-progress-card">
+            <div className="wpc-header">
+              <div className="wpc-left">
+                <h2 className="wpc-title">Workspace Completion Progress</h2>
+                <p className="wpc-percent">{completionPercent}% Completed</p>
+              </div>
+              <div className="wpc-icon-badge">
+                <span className="wpc-icon">📈</span>
+              </div>
             </div>
-            <div className="progress-bar">
+
+            <div className="wpc-bar-track">
               <div
-                className="progress-fill"
-                style={{ width: `${completionPercent}%` }}
-              />
+                className="wpc-bar-fill"
+                style={{ "--fill-width": `${completionPercent}%` }}
+              >
+                <span className="wpc-bar-shine" />
+              </div>
             </div>
+
+            <p className="wpc-count-label">
+              {totalTasks === 0
+                ? "No tasks created yet."
+                : `${completedTasks} of ${totalTasks} tasks completed`}
+            </p>
           </div>
 
-          {/* Quick Create Task */}
-          <div className="quick-add-card">
-            <h2>Quick Add Task</h2>
-            <form className="quick-add-form" onSubmit={handleQuickAdd}>
-              <input
-                type="text"
-                placeholder="What needs to be done?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-              <div className="quick-add-row">
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                </select>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="work">Work</option>
-                  <option value="study">Study</option>
-                  <option value="personal">Personal</option>
-                </select>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option value="pending">Todo</option>
-                  <option value="in-progress">Active</option>
-                  <option value="completed">Done</option>
-                </select>
+          {/* Quick Create Task CTA Card */}
+          <div className="quick-create-cta-card">
+            <div className="qc-cta-left">
+              <div className="qc-cta-icon">✨</div>
+              <div className="qc-cta-text">
+                <h2>Create a New Task</h2>
+                <p>Add tasks to your workspace to stay on track with your goals.</p>
               </div>
-              <button type="submit" className="quick-add-submit-btn">
-                + Add Task
-              </button>
-            </form>
+            </div>
+            <button
+              className="qc-cta-btn"
+              onClick={openCreateModal}
+            >
+              + Create Task
+            </button>
           </div>
+
+          {/* Status Summary Pills */}
+          {totalTasks > 0 && (
+            <div className="dashboard-status-pills">
+              {overdueTasks > 0 && (
+                <div className="status-pill status-pill--danger">
+                  <span className="status-pill-dot" />
+                  <span>{overdueTasks} Overdue</span>
+                </div>
+              )}
+              {dueTodayTasks > 0 && (
+                <div className="status-pill status-pill--warning">
+                  <span className="status-pill-dot" />
+                  <span>{dueTodayTasks} Due Today</span>
+                </div>
+              )}
+              {overdueTasks === 0 && dueTodayTasks === 0 && (
+                <div className="status-pill status-pill--success">
+                  <span className="status-pill-dot" />
+                  <span>All caught up! No overdue tasks 🎉</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Upcoming Checklist summary */}
           <div className="upcoming-summary-card">
@@ -286,6 +301,24 @@ function Dashboard() {
           <ActivityList userId={user?.id} />
         </div>
       </div>
+
+      {/* ── Create Task Modal ── */}
+      <TaskModal
+        mode="create"
+        isOpen={isCreateModalOpen}
+        onClose={closeCreateModal}
+        onSubmit={handleCreateTask}
+        title={title}
+        setTitle={setTitle}
+        description={description}
+        setDescription={setDescription}
+        dueDate={dueDate}
+        setDueDate={setDueDate}
+        priority={priority}
+        setPriority={setPriority}
+        category={category}
+        setCategory={setCategory}
+      />
     </div>
   );
 }

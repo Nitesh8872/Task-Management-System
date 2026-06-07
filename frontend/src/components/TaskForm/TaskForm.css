@@ -1,8 +1,3 @@
-/* ============================================================
-TaskForm.css — Create / Edit Task form styles
-Used inside Dashboard's "Create Task" card
-   ============================================================ */
-
 /* ── Create Task card wrapper ── */
 .create-task-card {
   background: var(--color-surface);

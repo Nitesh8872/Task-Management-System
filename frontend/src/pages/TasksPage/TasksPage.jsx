@@ -3,8 +3,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { getTasks, createTask, deleteTask, updateTask } from "../../services/api";
 import { logActivity } from "../../utils/activityLogger";
+import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_OPTIONS } from "../../utils/taskStatus";
 import TaskCard from "../../components/TaskCard/TaskCard";
 import TaskBoard from "../../components/TaskBoard/TaskBoard";
+import TaskModal from "../../components/TaskModal/TaskModal";
 import "./TasksPage.css";
 
 function TasksPage() {
@@ -27,7 +29,7 @@ function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest");
 
-  // Create Modal State
+  // ── Create Modal State ──
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -35,7 +37,7 @@ function TasksPage() {
   const [priority, setPriority] = useState("medium");
   const [category, setCategory] = useState("work");
 
-  // Edit Modal State
+  // ── Edit Modal State ──
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
@@ -66,6 +68,21 @@ function TasksPage() {
     localStorage.setItem("tasksViewMode", viewMode);
   }, [viewMode]);
 
+  // ── Open / Close helpers ──
+  const openCreateModal = () => {
+    // Reset form fields
+    setTitle("");
+    setDescription("");
+    setDueDate("");
+    setPriority("medium");
+    setCategory("work");
+    setIsCreateModalOpen(true);
+  };
+
+  const closeCreateModal = () => setIsCreateModalOpen(false);
+
+  const closeEditModal = () => setIsEditModalOpen(false);
+
   // Handle Create Task
   const handleCreateTaskSubmit = async (e) => {
     e.preventDefault();
@@ -79,23 +96,15 @@ function TasksPage() {
       setTasks((prev) => [...prev, newTask]);
       setIsCreateModalOpen(false);
 
-      // Log activity and notify
       logActivity(user.id, `Created task "${title}"`);
       addNotification(`Task "${title}" created successfully!`, "success");
-      
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setDueDate("");
-      setPriority("medium");
-      setCategory("work");
     } catch (err) {
       console.error(err);
       addNotification("Failed to create task", "error");
     }
   };
 
-  // Handle Edit Click
+  // Handle Edit Click — pre-fills the modal
   const handleEditClick = (task) => {
     setEditingTaskId(task._id);
     setEditTitle(task.title);
@@ -138,11 +147,11 @@ function TasksPage() {
   const handleCompleteTask = async (taskId) => {
     try {
       const target = tasks.find((t) => t._id === taskId);
-      const updated = await updateTask(taskId, { status: "completed" }, token);
+      const updated = await updateTask(taskId, { status: TASK_STATUS.COMPLETED }, token);
       setTasks((prev) => prev.map((t) => (t._id === taskId ? updated : t)));
-      
-      logActivity(user.id, `Completed task "${target.title}"`);
-      addNotification(`Task "${target.title}" marked completed!`, "success");
+
+      logActivity(user.id, `Marked task "${target.title}" Completed`);
+      addNotification(`Task "${target.title}" marked Completed!`, "success");
     } catch (err) {
       console.error(err);
       addNotification("Failed to complete task", "error");
@@ -156,8 +165,9 @@ function TasksPage() {
       const updated = await updateTask(taskId, { status: newStatus }, token);
       setTasks((prev) => prev.map((t) => (t._id === taskId ? updated : t)));
 
-      logActivity(user.id, `Moved "${target.title}" to ${newStatus}`);
-      addNotification(`Task status updated to ${newStatus}`, "info");
+      const label = TASK_STATUS_LABELS[newStatus] || newStatus;
+      logActivity(user.id, `Moved task "${target.title}" to ${label}`);
+      addNotification(`Task moved to ${label}`, "info");
     } catch (err) {
       console.error(err);
       addNotification("Failed to drag and move task", "error");
@@ -185,10 +195,10 @@ function TasksPage() {
     const matchesSearch = task.title
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus =
       statusFilter === "all" || task.status === statusFilter;
-      
+
     const matchesCategory =
       categoryFilter === "all" || task.category === categoryFilter;
 
@@ -240,7 +250,7 @@ function TasksPage() {
           </div>
 
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={openCreateModal}
             className="add-task-primary-btn"
           >
             + Create Task
@@ -279,13 +289,13 @@ function TasksPage() {
           <div className="filter-group">
             <span className="filter-label">Status:</span>
             <div className="filter-chips">
-              {["all", "pending", "in-progress", "completed"].map((st) => (
+              {[{ value: "all", label: "All" }, ...TASK_STATUS_OPTIONS].map((opt) => (
                 <button
-                  key={st}
-                  onClick={() => setStatusFilter(st)}
-                  className={`filter-chip ${statusFilter === st ? "active" : ""}`}
+                  key={opt.value}
+                  onClick={() => setStatusFilter(opt.value)}
+                  className={`filter-chip ${statusFilter === opt.value ? "active" : ""}`}
                 >
-                  {st === "all" ? "All" : st === "pending" ? "Todo" : st === "in-progress" ? "Active" : "Done"}
+                  {opt.label}
                 </button>
               ))}
             </div>
@@ -334,7 +344,7 @@ function TasksPage() {
           <h3>No tasks matched filters</h3>
           <p>Create your first task or change search criteria to begin.</p>
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={openCreateModal}
             className="add-task-primary-btn"
           >
             Create Task
@@ -362,158 +372,43 @@ function TasksPage() {
         </div>
       )}
 
-      {/* Create Modal */}
-      {isCreateModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
-          <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Create New Task</h2>
-            <form onSubmit={handleCreateTaskSubmit} className="task-form">
-              <input
-                type="text"
-                placeholder="Task Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-              <textarea
-                placeholder="Task Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div className="form-group">
-                  <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Priority</label>
-                  <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                  >
-                    <option value="low">Low Priority</option>
-                    <option value="medium">Medium Priority</option>
-                    <option value="high">High Priority</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="work">Work</option>
-                    <option value="study">Study</option>
-                    <option value="personal">Personal</option>
-                  </select>
-                </div>
-              </div>
+      {/* ── Create Task Modal ── */}
+      <TaskModal
+        mode="create"
+        isOpen={isCreateModalOpen}
+        onClose={closeCreateModal}
+        onSubmit={handleCreateTaskSubmit}
+        title={title}
+        setTitle={setTitle}
+        description={description}
+        setDescription={setDescription}
+        dueDate={dueDate}
+        setDueDate={setDueDate}
+        priority={priority}
+        setPriority={setPriority}
+        category={category}
+        setCategory={setCategory}
+      />
 
-              <div className="form-group" style={{ marginTop: "10px" }}>
-                <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Due Date</label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-
-              <div className="modal-actions" style={{ marginTop: "20px" }}>
-                <button type="submit" className="save-btn">
-                  Add Task
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => setIsCreateModalOpen(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
-          <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Edit Workspace Task</h2>
-            <form onSubmit={handleSaveEditSubmit} className="task-form">
-              <input
-                type="text"
-                placeholder="Task Title"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                required
-              />
-              <textarea
-                placeholder="Description"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-              />
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div className="form-group">
-                  <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Priority</label>
-                  <select
-                    value={editPriority}
-                    onChange={(e) => setEditPriority(e.target.value)}
-                  >
-                    <option value="high">High Priority</option>
-                    <option value="medium">Medium Priority</option>
-                    <option value="low">Low Priority</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Category</label>
-                  <select
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
-                  >
-                    <option value="work">Work</option>
-                    <option value="study">Study</option>
-                    <option value="personal">Personal</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
-                <div className="form-group">
-                  <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Due Date</label>
-                  <input
-                    type="date"
-                    value={editDueDate}
-                    onChange={(e) => setEditDueDate(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label style={{ fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>Status</label>
-                  <select
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value)}
-                  >
-                    <option value="pending">Todo</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="modal-actions" style={{ marginTop: "20px" }}>
-                <button type="submit" className="save-btn">
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => setIsEditModalOpen(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ── Edit Task Modal ── */}
+      <TaskModal
+        mode="edit"
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        onSubmit={handleSaveEditSubmit}
+        title={editTitle}
+        setTitle={setEditTitle}
+        description={editDescription}
+        setDescription={setEditDescription}
+        dueDate={editDueDate}
+        setDueDate={setEditDueDate}
+        priority={editPriority}
+        setPriority={setEditPriority}
+        category={editCategory}
+        setCategory={setEditCategory}
+        status={editStatus}
+        setStatus={setEditStatus}
+      />
     </div>
   );
 }

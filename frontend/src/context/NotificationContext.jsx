@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { TASK_STATUS } from "../utils/taskStatus";
 
 const NotificationContext = createContext(null);
 
@@ -26,7 +27,7 @@ export function NotificationProvider({ children }) {
     let changed = false;
 
     tasks.forEach((task) => {
-      if (task.status === "completed" || !task.dueDate) return;
+      if (task.status === TASK_STATUS.COMPLETED || !task.dueDate) return;
 
       const dueDate = new Date(task.dueDate);
       dueDate.setHours(0, 0, 0, 0);

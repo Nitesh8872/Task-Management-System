@@ -1,30 +1,34 @@
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import TaskCard from "../TaskCard/TaskCard";
+import { TASK_STATUS, TASK_STATUS_LABELS } from "../../utils/taskStatus";
 import "./TaskBoard.css";
 
 function TaskBoard({ tasks, onEdit, onComplete, onDelete, onStatusChange }) {
-  // Map statuses to board columns
+  // Map statuses to board columns using canonical constants
   const columns = {
-    pending: {
-      id: "pending",
-      title: "Todo",
-      tasks: tasks.filter((t) => t.status === "pending"),
+    [TASK_STATUS.PENDING]: {
+      id: TASK_STATUS.PENDING,
+      title: TASK_STATUS_LABELS[TASK_STATUS.PENDING],
+      tasks: tasks.filter((t) => t.status === TASK_STATUS.PENDING),
       emoji: "📋",
-      className: "col-todo",
+      className: "col-pending",
+      emptyText: "No pending tasks",
     },
-    "in-progress": {
-      id: "in-progress",
-      title: "In Progress",
-      tasks: tasks.filter((t) => t.status === "in-progress"),
+    [TASK_STATUS.IN_PROGRESS]: {
+      id: TASK_STATUS.IN_PROGRESS,
+      title: TASK_STATUS_LABELS[TASK_STATUS.IN_PROGRESS],
+      tasks: tasks.filter((t) => t.status === TASK_STATUS.IN_PROGRESS),
       emoji: "⏳",
       className: "col-in-progress",
+      emptyText: "No tasks in progress",
     },
-    completed: {
-      id: "completed",
-      title: "Completed",
-      tasks: tasks.filter((t) => t.status === "completed"),
+    [TASK_STATUS.COMPLETED]: {
+      id: TASK_STATUS.COMPLETED,
+      title: TASK_STATUS_LABELS[TASK_STATUS.COMPLETED],
+      tasks: tasks.filter((t) => t.status === TASK_STATUS.COMPLETED),
       emoji: "✅",
       className: "col-completed",
+      emptyText: "No completed tasks",
     },
   };
 
@@ -66,7 +70,7 @@ function TaskBoard({ tasks, onEdit, onComplete, onDelete, onStatusChange }) {
                   }`}
                 >
                   {column.tasks.length === 0 ? (
-                    <div className="kanban-board-empty">No tasks in this list</div>
+                    <div className="kanban-board-empty">{column.emptyText}</div>
                   ) : (
                     column.tasks.map((task, index) => (
                       <Draggable

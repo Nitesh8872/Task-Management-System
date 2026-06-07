@@ -1,493 +1,284 @@
-# 🚀 TaskHub - Advanced Task Management System
+# 📋 TaskHub — MERN Stack Task Management System
 
-TaskHub is a modern full-stack task management application built using the MERN Stack (MongoDB, Express.js, React.js, and Node.js).
-
-Built a full-stack productivity management platform with authentication, task tracking, analytics dashboard, calendar visualization, Kanban board, dark mode, notifications, and activity monitoring using the MERN stack
-
-The application helps users organize tasks, track productivity, manage deadlines, visualize progress, and monitor work through an intuitive dashboard experience.
+> A full-stack, feature-rich Task Management Web Application built with MongoDB, Express.js, React.js, and Node.js.
 
 ---
 
-# ✨ Features
+## 🖥️ Live Preview
 
-# 🎯 Core Features
-
-These features form the foundation of the TaskHub platform.
-
-## Authentication & Security
-
-✅ User Registration
-
-✅ User Login
-
-✅ JWT Authentication
-
-✅ Protected Routes
-
-✅ User-Specific Data Access
-
-✅ Secure Password Hashing using bcryptjs
+> Run locally using the setup instructions below.
 
 ---
 
-## Task Management
+## ✨ Features
 
-✅ Create Tasks
+### 🔐 Core Features (from Assignment)
 
-✅ View Tasks
-
-✅ Update Tasks
-
-✅ Delete Tasks
-
-✅ Mark Tasks as Completed
-
-✅ Task Status Management
-
-✅ Due Date Management
-
----
-
-## Search & Filtering
-
-✅ Search Tasks
-
-✅ Filter by Status
-
-✅ Filter by Category
-
-✅ Filter by Priority
-
-✅ Sort Tasks
+| Feature | Description |
+|---|---|
+| **User Registration & Login** | Secure sign-up and login with JWT-based authentication |
+| **Create Tasks** | Add tasks with title, description, due date, priority & category |
+| **Update Tasks** | Edit any task's details inline via a modal |
+| **Delete Tasks** | Remove tasks permanently from the workspace |
+| **Toggle Task Status** | Mark tasks as `Pending → In Progress → Completed` |
+| **RESTful API** | Backend exposes clean REST endpoints for all CRUD operations |
+| **JWT Auth Middleware** | All task routes are protected — only authenticated users can access |
+| **Form Validation** | Frontend and API-level validation for all inputs |
 
 ---
 
-## Task Organization
+### 🚀 Additional Features (Self-Added)
 
-✅ Priority Levels (Low / Medium / High)
-
-✅ Categories (Work / Study / Personal)
-
-✅ Task Status Tracking
-
-✅ Responsive Task Interface
-
----
-
-# 🌟 Additional Features
-
-These features were implemented to improve productivity, usability, and user experience.
-
-## Dashboard Module
-
-✅ Productivity Overview
-
-✅ Total Tasks Statistics
-
-✅ Due Today Statistics
-
-✅ Overdue Tasks Statistics
-
-✅ Completed Tasks Statistics
-
-✅ Productivity Progress Tracking
-
-✅ Quick Add Task
-
-✅ Upcoming Milestones
-
-✅ Recent Activity Feed
+| Feature | Description |
+|---|---|
+| **📊 Analytics Dashboard** | Interactive charts (Recharts) showing task breakdown by status, priority, category, and completion trend |
+| **📅 Task Calendar View** | Monthly calendar view with tasks pinned to their due dates, color-coded by priority |
+| **🗂️ Kanban Board (Drag & Drop)** | Drag tasks between `Pending`, `In Progress`, and `Completed` columns using `@hello-pangea/dnd` |
+| **📋 Task List View** | Filterable table view with search and status filters |
+| **🔔 Notification System** | Toast-style notifications for every task action (create, update, delete, complete) |
+| **⏰ Due-Date Alerts** | Auto-detects overdue tasks and tasks due today on the dashboard |
+| **📈 Workspace Progress Bar** | Visual completion percentage meter on the dashboard |
+| **🗓️ Upcoming Milestones Widget** | Dashboard widget listing the next 3 upcoming non-completed tasks sorted by due date |
+| **📜 Activity Logger** | Tracks per-user activity history in `localStorage` (last 15 actions) with live updates |
+| **👤 Account Center (Profile Page)** | Full profile management: update name, change avatar, change password with strength meter |
+| **🗑️ Delete Account** | Danger zone — permanently deletes account with type-to-confirm modal |
+| **🖼️ Avatar Upload** | Upload a profile photo stored in `localStorage` (< 1.5 MB) |
+| **🎯 Productivity Stats** | Per-user stats: total tasks, completed, pending, completion rate % |
+| **📐 Priority & Category Tags** | Tasks tagged with `Low / Medium / High` priority and `Work / Study / Personal` category |
+| **🔒 Protected Routes** | React-side route guard redirects unauthenticated users to login |
+| **📱 Responsive Design** | Mobile-friendly layout using CSS Grid and media queries |
+| **🌙 Dark-themed UI** | Premium dark-mode design system with glassmorphism cards and smooth animations |
 
 ---
 
-## Advanced Task Workspace
+## 🗂️ Project Structure
 
-### List View
-
-✅ Modern Task Cards
-
-✅ Priority Badges
-
-✅ Category Badges
-
-✅ Due Date Indicators
-
-### Board View
-
-✅ Kanban Workflow
-
-✅ Todo Column
-
-✅ In Progress Column
-
-✅ Completed Column
-
----
-
-## Analytics Dashboard
-
-✅ Productivity Score
-
-✅ Task Status Breakdown
-
-✅ Priority Distribution
-
-✅ Category Distribution
-
-✅ Completion Metrics
-
-✅ Interactive Charts using Recharts
-
----
-
-## Calendar Module
-
-✅ Monthly Calendar View
-
-✅ Due Date Visualization
-
-✅ Upcoming Deadline Tracking
-
-✅ Month Navigation
-
----
-
-## Profile Management
-
-✅ User Profile Overview
-
-✅ Account Information
-
-✅ Password Management Interface
-
-✅ Account Status Display
-
----
-
-## User Experience Enhancements
-
-✅ Dark Mode
-
-✅ Notification System
-
-✅ Activity Logging
-
-✅ Responsive Design
-
-✅ Modern Dashboard UI
-
-✅ Reusable React Components
-
-✅ Context API State Management
-
----
-
-# 🛠 Tech Stack
-
-## Frontend
-
-* React.js
-* React Router DOM
-* Axios
-* Context API
-* Recharts
-* CSS3
-
-## Backend
-
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT Authentication
-* bcryptjs
-* dotenv
-
----
-
-# 📁 Project Structure
-
-```text
-TaskHub/
-
+```
+Task Management System/
 ├── backend/
-│
 │   ├── src/
-│   │
-│   ├── config/
-│   │   └── db.js
-│   │
-│   ├── controllers/
-│   │   ├── userController.js
-│   │   └── taskController.js
-│   │
-│   ├── middleware/
-│   │   └── authMiddleware.js
-│   │
-│   ├── models/
-│   │   ├── user.js
-│   │   └── task.js
-│   │
-│   ├── routes/
-│   │   ├── userRoutes.js
-│   │   └── taskRoutes.js
-│   │
-│   ├── server.js
-│   ├── package.json
-│   └── .env
+│   │   ├── config/         # MongoDB connection
+│   │   ├── constants/      # Shared constants
+│   │   ├── controllers/    # Route logic (userController, taskController)
+│   │   ├── middleware/      # JWT auth middleware
+│   │   ├── models/         # Mongoose schemas (User, Task)
+│   │   ├── routes/         # Express routers (userRoutes, taskRoutes)
+│   │   └── server.js       # App entry point
+│   ├── .env                # Environment variables
+│   └── package.json
 │
-├── frontend/
-│
-│   ├── public/
-│   │
-│   ├── src/
-│   │
-│   ├── components/
-│   │   ├── ActivityList/
-│   │   ├── Navbar/
-│   │   ├── Sidebar/
-│   │   ├── StatCard/
-│   │   ├── TaskBoard/
-│   │   ├── TaskCard/
-│   │   ├── TaskForm/
-│   │   ├── TaskList/
-│   │   └── ProtectedRoute.jsx
-│   │
-│   ├── context/
-│   │   ├── AuthContext.jsx
-│   │   ├── NotificationContext.jsx
-│   │   └── ThemeContext.jsx
-│   │
-│   ├── layouts/
-│   │   └── DashboardLayout.jsx
-│   │
-│   ├── pages/
-│   │   ├── Dashboard/
-│   │   ├── TasksPage/
-│   │   ├── Analytics/
-│   │   ├── Calendar/
-│   │   ├── Profile/
-│   │   ├── Login/
-│   │   └── Register/
-│   │
-│   ├── services/
-│   │   └── api.js
-│   │
-│   ├── styles/
-│   │   ├── variables.css
-│   │   ├── app.css
-│   │   └── index.css
-│   │
-│   ├── utils/
-│   │   ├── activityLogger.js
-│   │   └── formatters.js
-│   │
-│   ├── App.jsx
-│   └── main.jsx
-│
-├── .gitignore
-├── README.md
-└── package.json
+└── frontend/
+    ├── src/
+    │   ├── components/     # Reusable UI (Navbar, Sidebar, TaskCard, TaskModal, StatCard…)
+    │   ├── context/        # React Contexts (AuthContext, NotificationContext)
+    │   ├── layouts/        # App layout wrapper
+    │   ├── pages/          # Page components
+    │   │   ├── Login/
+    │   │   ├── Register/
+    │   │   ├── Dashboard/
+    │   │   ├── TasksPage/
+    │   │   ├── Analytics/
+    │   │   ├── Calendar/
+    │   │   └── Profile/
+    │   ├── services/       # Axios API service layer (api.js)
+    │   ├── styles/         # Global CSS design system
+    │   └── utils/          # Helpers (activityLogger, formatters, taskStatus)
+    ├── index.html
+    └── package.json
 ```
 
 ---
 
-# ⚙ Environment Variables
+## 🛠️ Tech Stack
 
-Create a `.env` file inside the backend folder:
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, React Router v7, Vite 8 |
+| **State Management** | React Context API (Auth + Notifications) |
+| **Charts** | Recharts |
+| **Drag & Drop** | @hello-pangea/dnd |
+| **HTTP Client** | Axios |
+| **Backend** | Node.js, Express.js 5 |
+| **Database** | MongoDB with Mongoose |
+| **Authentication** | JWT (jsonwebtoken) + bcryptjs |
+| **Dev Server** | Nodemon |
 
-```env
-PORT=5000
+---
 
-MONGO_URI=your_mongodb_connection_string
+## ⚙️ Setup & Installation
 
-JWT_SECRET=your_secret_key
+### Prerequisites
+
+Make sure you have the following installed:
+
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [MongoDB](https://www.mongodb.com/try/download/community) (local) **or** a MongoDB Atlas connection string
+- [Git](https://git-scm.com/)
+
+---
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Nitesh8872/Task-Management-System.git
+cd "Task Management System"
 ```
 
 ---
 
-# 📦 Installation
-
-## Backend
+### 2. Backend Setup
 
 ```bash
 cd backend
-
 npm install
-
-npm run dev
 ```
 
-## Frontend
+Create a `.env` file inside the `backend/` folder:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/taskmanagement
+JWT_SECRET=your_super_secret_key_here
+```
+
+> 💡 Replace `MONGO_URI` with your MongoDB Atlas URI if you're not running MongoDB locally.
+> 💡 Change `JWT_SECRET` to any long, random string for security.
+
+Start the backend server:
+
+```bash
+# Development (auto-restarts on file changes)
+npx nodemon src/server.js
+
+# OR standard node
+node src/server.js
+```
+
+The API will be running at: **http://localhost:5000**
+
+---
+
+### 3. Frontend Setup
+
+Open a **new terminal** and run:
 
 ```bash
 cd frontend
-
 npm install
-
 npm run dev
 ```
 
+The app will be running at: **http://localhost:5173**
+
 ---
 
-# 🔐 Authentication Flow
+## 🔌 API Endpoints
 
-```text
-Register User
-      ↓
-Login
-      ↓
-Generate JWT
-      ↓
-Store Token
-      ↓
-Protected Routes
-      ↓
-Authorized Access
+### Auth Routes — `/api/users`
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/users/register` | Register a new user | ❌ |
+| `POST` | `/api/users/login` | Login and receive JWT token | ❌ |
+| `GET` | `/api/users/me` | Get current logged-in user | ✅ |
+| `PUT` | `/api/users/me` | Update profile (name / password) | ✅ |
+| `DELETE` | `/api/users/me` | Permanently delete account | ✅ |
+
+### Task Routes — `/api/tasks`
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `GET` | `/api/tasks` | Get all tasks for logged-in user | ✅ |
+| `POST` | `/api/tasks` | Create a new task | ✅ |
+| `PUT` | `/api/tasks/:id` | Update a task by ID | ✅ |
+| `DELETE` | `/api/tasks/:id` | Delete a task by ID | ✅ |
+
+---
+
+## 🗄️ Database Schema
+
+### User Schema
+
+```js
+{
+  name:      String  (required),
+  email:     String  (required, unique),
+  password:  String  (required, hashed with bcryptjs),
+  createdAt: Date    (auto-generated)
+}
+```
+
+### Task Schema
+
+```js
+{
+  title:       String   (required),
+  description: String   (default: ""),
+  dueDate:     Date     (default: null),
+  priority:    String   (enum: "low" | "medium" | "high", default: "medium"),
+  category:    String   (enum: "work" | "study" | "personal", default: "personal"),
+  status:      String   (enum: "pending" | "in-progress" | "completed", default: "pending"),
+  user:        ObjectId (ref: User, required),
+  createdAt:   Date     (auto-generated),
+  updatedAt:   Date     (auto-generated)
+}
 ```
 
 ---
 
-# 📡 API Endpoints
+## 📸 Pages Overview
 
-## Authentication
-
-### Register
-
-```http
-POST /api/users/register
-```
-
-### Login
-
-```http
-POST /api/users/login
-```
+| Page | Route | Description |
+|---|---|---|
+| Login | `/login` | JWT-based login form |
+| Register | `/register` | User sign-up form |
+| Dashboard | `/dashboard` | Stats, progress bar, upcoming milestones, activity log |
+| Tasks | `/tasks` | List view + Kanban board with drag & drop |
+| Analytics | `/analytics` | Charts: task status, priority, category breakdown |
+| Calendar | `/calendar` | Monthly calendar with tasks pinned to due dates |
+| Profile | `/profile` | Account management, avatar, password change |
 
 ---
 
-## Tasks
+## 🧪 Running in Production
 
-### Get Tasks
+### Build the frontend
 
-```http
-GET /api/tasks
+```bash
+cd frontend
+npm run build
 ```
 
-### Create Task
+The optimized build will be in `frontend/dist/`.
 
-```http
-POST /api/tasks
-```
+### Serve with a static file server or reverse proxy (e.g., Nginx)
 
-### Update Task
-
-```http
-PUT /api/tasks/:id
-```
-
-### Delete Task
-
-```http
-DELETE /api/tasks/:id
-```
+You can also serve the `dist/` folder directly from Express in production.
 
 ---
 
-# 📈 Current Project Status
+## 🛡️ Environment Variables Reference
 
-### Backend
-
-✅ MongoDB Integration
-
-✅ REST APIs
-
-✅ JWT Authentication
-
-✅ Protected Routes
-
-✅ CRUD Operations
-
-✅ User-Specific Task Access
-
-### Frontend
-
-✅ Authentication Pages
-
-✅ Dashboard
-
-✅ Task Management Workspace
-
-✅ Kanban Board View
-
-✅ Analytics Dashboard
-
-✅ Calendar Module
-
-✅ Profile Page
-
-✅ Dark Mode
-
-✅ Responsive Design
-
-✅ Notification System
-
-✅ Activity Tracking
+| Variable | Location | Description |
+|---|---|---|
+| `PORT` | `backend/.env` | Port for Express server (default: 5000) |
+| `MONGO_URI` | `backend/.env` | MongoDB connection string |
+| `JWT_SECRET` | `backend/.env` | Secret key for signing JWT tokens |
 
 ---
 
-# 🚀 Future Roadmap
-
-* Drag & Drop Kanban Board
-* Email Notifications
-* Team Collaboration
-* Task Comments
-* File Attachments
-* Reminder Scheduling
-* Export Reports (PDF / Excel)
-* Pagination
-* Cloud Deployment
-* Mobile Application
-
----
-
-# 📸 Application Modules
-
-### Dashboard
-
-* Productivity Overview
-* Quick Task Creation
-* Upcoming Milestones
-* Activity Feed
-
-### Task Workspace
-
-* List View
-* Board View
-* Search & Filters
-
-### Analytics
-
-* Charts & Productivity Insights
-
-### Calendar
-
-* Monthly Planning Interface
-
-### Profile
-
-* Account Settings & User Information
-
----
-
-# 👨‍💻 Author
+## 👨‍💻 Author
 
 **Nitesh Sukhwal**
-
-MERN Stack Developer
-
-GitHub: https://github.com/your-github-username
+- GitHub: [@Nitesh8872](https://github.com/Nitesh8872)
 
 ---
 
-⭐ If you found this project useful, consider giving it a star.
+## 📄 License
+
+This project was developed as a **MERN Stack Internship Assignment**.
+Feel free to use it as a reference or learning resource.
+
+---
+
+> ⭐ If you found this project helpful, consider giving it a star on GitHub!

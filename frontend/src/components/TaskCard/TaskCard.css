@@ -55,34 +55,34 @@
   word-break: break-word;
 }
 
-/* Badges */
-.due-badge {
+/* ── Status Badges (Pending / In Progress / Completed) ── */
+.status-badge {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 4px 8px;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.due-info {
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+.status-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
-.due-warning {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
+.status-in-progress {
+  background: rgba(6, 182, 212, 0.12);
+  color: #0e7490;
+  border: 1px solid rgba(6, 182, 212, 0.3);
 }
 
-.due-danger {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
-}
-
-.due-success {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
+.status-completed {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .task-desc {
@@ -152,11 +152,44 @@
   color: var(--color-category-personal-text);
 }
 
+/* ── Due Date Section ── */
+.due-date-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
 .due-date-display {
   font-size: 11px;
   color: var(--color-text-muted);
   font-weight: 500;
 }
+
+/* ── Due Indicators (Overdue / Due Today / Upcoming) ── */
+.due-indicator {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.due-indicator.overdue {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+.due-indicator.due-today {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
+.due-indicator.upcoming {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
 
 /* Card Actions */
 .task-card-actions {

@@ -13,9 +13,25 @@ function Navbar() {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [avatar, setAvatar] = useState(null);
 
   const notifRef = useRef(null);
   const userRef = useRef(null);
+
+  // Load avatar on user change or updates
+  useEffect(() => {
+    const loadAvatar = () => {
+      if (user?.id) {
+        setAvatar(localStorage.getItem(`avatar_${user.id}`));
+      } else {
+        setAvatar(null);
+      }
+    };
+    loadAvatar();
+    window.addEventListener("avatar-updated", loadAvatar);
+    return () => window.removeEventListener("avatar-updated", loadAvatar);
+  }, [user]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -136,8 +152,12 @@ function Navbar() {
                   className="nav-user-profile-btn"
                   onClick={() => setShowUserDropdown(!showUserDropdown)}
                 >
-                  <div className="user-avatar">
-                    {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                  <div className="user-avatar" style={{ overflow: "hidden", padding: 0 }}>
+                    {avatar ? (
+                      <img src={avatar} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                    ) : (
+                      user?.name ? user.name.charAt(0).toUpperCase() : "U"
+                    )}
                   </div>
                   <span className="user-name-label">{user?.name || "Profile"}</span>
                 </button>

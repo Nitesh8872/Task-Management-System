@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getTasks } from "../../services/api";
+import { TASK_STATUS, TASK_STATUS_LABELS } from "../../utils/taskStatus";
 import "./Calendar.css";
 
 function Calendar() {
@@ -138,10 +139,9 @@ function Calendar() {
                       {dayTasks.map((t) => (
                         <div
                           key={t._id}
-                          className={`cal-task-item ${t.priority}-p ${
-                            t.status === "completed" ? "completed-task" : ""
-                          }`}
-                          title={`${t.title} (${t.priority} priority - ${t.status})`}
+                          className={`cal-task-item ${t.priority}-p ${t.status === TASK_STATUS.COMPLETED ? "completed-task" : ""
+                            }`}
+                          title={`${t.title} (${t.priority} priority — ${TASK_STATUS_LABELS[t.status] || t.status})`}
                         >
                           {t.title}
                         </div>

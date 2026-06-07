@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getTasks } from "../../services/api";
+import { TASK_STATUS } from "../../utils/taskStatus";
 import {
   ResponsiveContainer,
   PieChart,
@@ -47,14 +48,14 @@ function Analytics() {
 
   // ── 1. Calculate Status Metrics ──
   const total = tasks.length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
-  const inProgress = tasks.filter((t) => t.status === "in-progress").length;
-  const pending = tasks.filter((t) => t.status === "pending").length;
+  const completed = tasks.filter((t) => t.status === TASK_STATUS.COMPLETED).length;
+  const inProgress = tasks.filter((t) => t.status === TASK_STATUS.IN_PROGRESS).length;
+  const pending = tasks.filter((t) => t.status === TASK_STATUS.PENDING).length;
 
   const statusData = [
-    { name: "Completed", value: completed, color: "#10b981" },
-    { name: "In Progress", value: inProgress, color: "#06b6d4" },
     { name: "Pending", value: pending, color: "#f59e0b" },
+    { name: "In Progress", value: inProgress, color: "#06b6d4" },
+    { name: "Completed", value: completed, color: "#10b981" },
   ].filter((d) => d.value > 0);
 
   // ── 2. Calculate Category Metrics ──
@@ -118,28 +119,28 @@ function Analytics() {
           value={`${completionRate}%`}
           icon="🎯"
           type="primary"
-          description="Total task completion percentage"
+          description="Completed ÷ Total × 100"
         />
         <StatCard
-          title="Done Tasks"
+          title="Completed Tasks"
           value={completed}
           icon="✅"
           type="success"
           description="Tasks marked completed"
         />
         <StatCard
-          title="Work In Progress"
+          title="In Progress Tasks"
           value={inProgress}
           icon="⏳"
           type="info"
-          description="Tasks active in board columns"
+          description="Tasks actively in progress"
         />
         <StatCard
-          title="Total Backlog"
+          title="Total Tasks"
           value={total}
-          icon="📁"
+          icon="📋"
           type="warning"
-          description="Total items registered"
+          description="All tasks registered"
         />
       </div>
 

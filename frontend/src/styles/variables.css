@@ -1,8 +1,6 @@
-/* ============================================================
-  DESIGN TOKENS — variables.css
-  Single source of truth for all CSS custom properties.
-  Import this file anywhere you need tokens.
-   ============================================================ */
+/* DESIGN TOKENS — variables.css
+Single source of truth for all CSS custom properties. */
+
 
 :root {
   /* ── Brand / Accent ── */

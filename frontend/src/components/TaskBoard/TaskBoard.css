@@ -47,9 +47,10 @@
 }
 
 /* Column themes */
-.col-todo h2 { color: var(--color-text-heading); }
+.col-pending h2 { color: var(--color-text-heading); }
 .col-in-progress h2 { color: #06b6d4; }
 .col-completed h2 { color: var(--color-success); }
+
 
 .kanban-list {
   display: flex;

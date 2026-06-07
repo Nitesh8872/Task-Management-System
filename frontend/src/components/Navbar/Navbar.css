@@ -1,6 +1,4 @@
-/* ============================================================
-Navbar.css — Premium Navbar component styles
-============================================================ */
+/* Navbar.css — Premium Navbar component styles */
 
 .navbar {
   width: 100%;
@@ -154,6 +152,7 @@ Navbar.css — Premium Navbar component styles
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -376,11 +375,11 @@ Navbar.css — Premium Navbar component styles
   .navbar-container {
     padding: 0 16px;
   }
-  
+
   .user-name-label {
     display: none;
   }
-  
+
   .navbar-brand span {
     display: none;
   }

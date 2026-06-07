@@ -114,3 +114,17 @@ export const updateUserProfile = async (userData, token) => {
 
     return response.data;
 };
+
+// Delete User Account
+export const deleteUserAccount = async (token) => {
+    const response = await axios.delete(
+        `${USER_API}/profile`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return response.data;
+};
