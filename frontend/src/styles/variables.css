@@ -1,0 +1,112 @@
+/* ============================================================
+  DESIGN TOKENS — variables.css
+  Single source of truth for all CSS custom properties.
+  Import this file anywhere you need tokens.
+   ============================================================ */
+
+:root {
+  /* ── Brand / Accent ── */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-soft: rgba(37, 99, 235, 0.12);
+
+  /* ── Semantic ── */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-muted: #6b7280;
+
+  /* ── Surface (Light) ── */
+  --color-bg: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-border-input: #d1d5db;
+
+  /* ── Text (Light) ── */
+  --color-text-heading: #0f172a;
+  --color-text-body: #374151;
+  --color-text-muted: #64748b;
+
+  /* ── Sidebar ── */
+  --sidebar-width: 260px;
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-active: #ffffff;
+  --sidebar-accent: #2563eb;
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ── Shadows ── */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.10);
+
+  /* ── Transitions ── */
+  --transition-fast: all 0.15s ease;
+  --transition-normal: all 0.25s ease;
+  --transition-slow: all 0.35s ease;
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 30px;
+  --font-size-3xl: 2.2rem;
+
+  /* ── Priority Colors ── */
+  --color-priority-high-bg: #fee2e2;
+  --color-priority-high-text: #991b1b;
+  --color-priority-medium-bg: #fef9c3;
+  --color-priority-medium-text: #854d0e;
+  --color-priority-low-bg: #dcfce7;
+  --color-priority-low-text: #166534;
+
+  /* ── Category Colors ── */
+  --color-category-work-bg: #eff6ff;
+  --color-category-work-text: #1e40af;
+  --color-category-study-bg: #f3e8ff;
+  --color-category-study-text: #6b21a8;
+  --color-category-personal-bg: #fdf2f8;
+  --color-category-personal-text: #9d174d;
+}
+
+/* ── Dark Mode Overrides ── */
+.dark-mode {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-alt: #0f172a;
+  --color-border: #334155;
+  --color-border-input: #475569;
+
+  --color-text-heading: #f1f5f9;
+  --color-text-body: #cbd5e1;
+  --color-text-muted: #94a3b8;
+
+  --color-primary-soft: rgba(37, 99, 235, 0.25);
+
+  /* ── Dark Mode Priority Colors ── */
+  --color-priority-high-bg: rgba(239, 68, 68, 0.18);
+  --color-priority-high-text: #fca5a5;
+  --color-priority-medium-bg: rgba(245, 158, 11, 0.18);
+  --color-priority-medium-text: #fde047;
+  --color-priority-low-bg: rgba(16, 185, 129, 0.18);
+  --color-priority-low-text: #86efac;
+
+  /* ── Dark Mode Category Colors ── */
+  --color-category-work-bg: rgba(59, 130, 246, 0.18);
+  --color-category-work-text: #93c5fd;
+  --color-category-study-bg: rgba(168, 85, 247, 0.18);
+  --color-category-study-text: #d8b4fe;
+  --color-category-personal-bg: rgba(236, 72, 153, 0.18);
+  --color-category-personal-text: #fbcfe8;
+}

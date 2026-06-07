@@ -1,0 +1,201 @@
+.calendar-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 0;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.calendar-title h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-text-heading);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.calendar-title p {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-card);
+}
+
+.calendar-nav h2 {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-heading);
+  margin: 0;
+  min-width: 140px;
+  text-align: center;
+}
+
+.cal-nav-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: var(--transition-fast);
+}
+
+.cal-nav-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text-heading);
+}
+
+/* ── Calendar Grid ── */
+.calendar-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(110px, 1fr);
+  gap: 6px;
+}
+
+.calendar-day {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-fast);
+  overflow: hidden;
+}
+
+.calendar-day:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-alt);
+}
+
+.calendar-day.empty-day {
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+
+.calendar-day.empty-day:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+.calendar-day.today {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.day-number {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-body);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.calendar-day.today .day-number {
+  color: var(--color-primary);
+}
+
+.calendar-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  flex: 1;
+  max-height: 80px;
+}
+
+.cal-task-item {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.cal-task-item:hover {
+  filter: brightness(0.95);
+  transform: scale(1.02);
+}
+
+.cal-task-item.high-p {
+  background: var(--color-priority-high-bg);
+  color: var(--color-priority-high-text);
+  border-left: 2px solid var(--color-danger);
+}
+
+.cal-task-item.medium-p {
+  background: var(--color-priority-medium-bg);
+  color: var(--color-priority-medium-text);
+  border-left: 2px solid var(--color-warning);
+}
+
+.cal-task-item.low-p {
+  background: var(--color-priority-low-bg);
+  color: var(--color-priority-low-text);
+  border-left: 2px solid var(--color-success);
+}
+
+.cal-task-item.completed-task {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+@media (max-width: 900px) {
+  .calendar-weekdays {
+    font-size: 10px;
+  }
+  
+  .calendar-grid {
+    grid-auto-rows: minmax(80px, 1fr);
+  }
+  
+  .cal-task-item {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+}

@@ -1,0 +1,207 @@
+.task-card-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  transition: var(--transition-normal);
+  border-left-width: 6px;
+}
+
+.task-card-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Priority Left Borders */
+.task-card-item.priority-high {
+  border-left-color: var(--color-danger);
+}
+
+.task-card-item.priority-medium {
+  border-left-color: var(--color-warning);
+}
+
+.task-card-item.priority-low {
+  border-left-color: var(--color-success);
+}
+
+.task-card-item.completed {
+  opacity: 0.75;
+}
+
+.task-card-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.task-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-heading);
+  margin: 0;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* Badges */
+.due-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.due-info {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.due-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.due-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+.due-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.task-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.task-card-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+}
+
+.details-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+/* Priority Tags */
+.priority-tag.priority-high {
+  background: var(--color-priority-high-bg);
+  color: var(--color-priority-high-text);
+}
+
+.priority-tag.priority-medium {
+  background: var(--color-priority-medium-bg);
+  color: var(--color-priority-medium-text);
+}
+
+.priority-tag.priority-low {
+  background: var(--color-priority-low-bg);
+  color: var(--color-priority-low-text);
+}
+
+/* Category Tags */
+.category-tag.category-work {
+  background: var(--color-category-work-bg);
+  color: var(--color-category-work-text);
+}
+
+.category-tag.category-study {
+  background: var(--color-category-study-bg);
+  color: var(--color-category-study-text);
+}
+
+.category-tag.category-personal {
+  background: var(--color-category-personal-bg);
+  color: var(--color-category-personal-text);
+}
+
+.due-date-display {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Card Actions */
+.task-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.card-action-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: center;
+}
+
+.card-action-btn.edit-btn {
+  background: var(--color-bg);
+  color: var(--color-text-body);
+  border: 1px solid var(--color-border);
+}
+
+.card-action-btn.edit-btn:hover {
+  background: var(--color-border);
+}
+
+.card-action-btn.complete-btn {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.card-action-btn.complete-btn:hover {
+  background: #059669;
+}
+
+.card-action-btn.delete-btn {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger);
+}
+
+.card-action-btn.delete-btn:hover {
+  background: var(--color-danger);
+  color: #fff;
+}

@@ -1,0 +1,31 @@
+/* ============================================================
+  App.css — App-level layout utilities
+  Imported in App.jsx
+   ============================================================ */
+
+/* Shared app layout: sidebar + main content side-by-side */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg);
+  transition: background var(--transition-normal);
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  transition: background var(--transition-normal);
+}
+
+/* Dark mode applied at root level */
+.app-layout.dark-mode,
+.dark-mode .main-content {
+  background: var(--color-bg);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
+}

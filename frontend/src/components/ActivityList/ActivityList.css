@@ -1,0 +1,92 @@
+.activity-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: 30px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  transition: var(--transition-normal);
+}
+
+.activity-header h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-heading);
+  margin-bottom: 24px;
+  margin-top: 0;
+}
+
+.activity-empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.empty-emoji {
+  font-size: 32px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.activity-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.activity-timeline::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 6px;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.activity-item {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 20px;
+}
+
+.activity-item:last-child {
+  margin-bottom: 0;
+}
+
+.activity-marker {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-primary);
+  z-index: 1;
+  transition: var(--transition-fast);
+}
+
+.activity-item:hover .activity-marker {
+  background: var(--color-primary);
+  transform: scale(1.15);
+}
+
+.activity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-body);
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
