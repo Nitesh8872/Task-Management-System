@@ -70,7 +70,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             { id: user._id },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" }
+            { expiresIn: "7d" }
         );
 
         // 5️. Send response with token
@@ -90,5 +90,65 @@ const loginUser = async (req, res) => {
     }
 };
 
+// Get currently logged-in user
+const getCurrentUser = async (req, res) => {
+    try {
 
-module.exports = { registerUser, loginUser };
+        // req.user comes from protect middleware
+        res.status(200).json({
+            id: req.user._id,
+            name: req.user.name,
+            email: req.user.email,
+            createdAt: req.user.createdAt,
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Server error",
+        });
+    }
+};
+
+// Update User Profile
+const updateUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const { name, password } = req.body;
+
+        if (name) {
+            user.name = name;
+        }
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        const updatedUser = await user.save();
+
+        res.status(200).json({
+            id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            createdAt: updatedUser.createdAt,
+            message: "Profile updated successfully",
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+module.exports = {
+    registerUser,
+    loginUser,
+    getCurrentUser,
+    updateUserProfile,
+};

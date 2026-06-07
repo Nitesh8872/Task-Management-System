@@ -12,13 +12,13 @@ const protect = async (req, res, next) => {
         try {
             // 2️. Get token from header
             token = req.headers.authorization.split(" ")[1];
-
+            console.log("TOKEN RECEIVED:", token);
             // 3️. Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+            console.log("DECODED:", decoded);
             // 4️. Get user from token and attach to req.user (exclude password)
             req.user = await User.findById(decoded.id).select("-password");
-
+            console.log("USER:", req.user);
             // 5️. Call next middleware/controller
             next();
         } catch (error) {

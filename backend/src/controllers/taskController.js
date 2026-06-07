@@ -5,13 +5,23 @@ const Task = require("../models/task");
 // POST /api/tasks
 const createTask = async (req, res) => {
     try {
-        const { title, description, status } = req.body;
+        const {
+            title,
+            description,
+            status,
+            dueDate,
+            priority,
+            category,
+        } = req.body;
 
         // 1️. Create a new task using Task model
         const task = await Task.create({
             title,
             description,
             status,
+            dueDate,
+            priority,
+            category,
             user: req.user.id, // This connects task to logged-in user and come from Middleware
         });
 
@@ -53,10 +63,20 @@ const updateTask = async (req, res) => {
         }
 
         // 5️. Update task fields
-        const { title, description, status } = req.body;
+        const {
+            title,
+            description,
+            status,
+            dueDate,
+            priority,
+            category,
+        } = req.body;
         task.title = title || task.title;
         task.description = description || task.description;
         task.status = status || task.status;
+        task.dueDate = dueDate || task.dueDate;
+        task.priority = priority || task.priority;
+        task.category = category || task.category;
 
         const updatedTask = await task.save();
         res.status(200).json(updatedTask);

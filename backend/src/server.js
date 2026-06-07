@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const cors = require("cors");
 
 const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
@@ -9,6 +10,9 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// for connection b/w backend and frontend
+app.use(cors());
 
 // Middleware to parse JSON
 app.use(express.json());
