@@ -7,6 +7,7 @@ import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_OPTIONS } from "../../util
 import TaskCard from "../../components/TaskCard/TaskCard";
 import TaskBoard from "../../components/TaskBoard/TaskBoard";
 import TaskModal from "../../components/TaskModal/TaskModal";
+import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
 import "./TasksPage.css";
 
 const LIST_PAGE_SIZE = 9;
@@ -48,6 +49,10 @@ function TasksPage() {
   const [editPriority, setEditPriority] = useState("medium");
   const [editCategory, setEditCategory] = useState("work");
   const [editStatus, setEditStatus] = useState("pending");
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [taskToDeleteId, setTaskToDeleteId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
@@ -198,17 +203,34 @@ function TasksPage() {
     }
   };
 
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) return;
+  const handleDeleteRequest = (taskId) => {
+    setTaskToDeleteId(taskId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (isDeleting) return;
+    setIsDeleteModalOpen(false);
+    setTaskToDeleteId(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!taskToDeleteId || isDeleting) return;
+
+    setIsDeleting(true);
     try {
-      const target = tasks.find((t) => t._id === taskId);
-      await deleteTask(taskId, token);
+      const target = tasks.find((t) => t._id === taskToDeleteId);
+      await deleteTask(taskToDeleteId, token);
       logActivity(user.id, `Deleted task "${target?.title}"`);
-      addNotification("Task deleted successfully", "success");
+      addNotification("Task deleted successfully.", "success");
+      setIsDeleteModalOpen(false);
+      setTaskToDeleteId(null);
       fetchTasks();
     } catch (err) {
       console.error(err);
       addNotification("Failed to delete task", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -328,7 +350,7 @@ function TasksPage() {
           tasks={tasks}
           onEdit={handleEditClick}
           onComplete={handleCompleteTask}
-          onDelete={handleDeleteTask}
+          onDelete={handleDeleteRequest}
           onStatusChange={handleStatusChange}
         />
       ) : (
@@ -340,7 +362,7 @@ function TasksPage() {
                 task={task}
                 onEdit={handleEditClick}
                 onComplete={handleCompleteTask}
-                onDelete={handleDeleteTask}
+                onDelete={handleDeleteRequest}
               />
             ))}
           </div>
@@ -401,6 +423,13 @@ function TasksPage() {
         setCategory={setEditCategory}
         status={editStatus}
         setStatus={setEditStatus}
+      />
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        loading={isDeleting}
       />
     </div>
   );
