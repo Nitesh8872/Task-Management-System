@@ -7,7 +7,7 @@ A full-stack task management web application built with the MERN stack. Users ca
 
 **Live demo**
 
-- Frontend: [tranquil-baklava-d4d3eb.netlify.app](https://tranquil-baklava-d4d3eb.netlify.app/login)
+- Frontend: [tranquil-baklava-d4d3eb.netlify.app](https://tranquil-baklava-d4d3eb.netlify.app/)
 - Backend API: [task-management-system-production-0d38.up.railway.app](https://task-management-system-production-0d38.up.railway.app/)
 
 
