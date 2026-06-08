@@ -19,12 +19,16 @@ const createTask = async (req, res) => {
             category,
         } = req.body;
 
+        if (!title || !title.trim()) {
+            return res.status(400).json({ message: "Title is required" });
+        }
+
         // 1️. Create a new task using Task model
         const task = await Task.create({
-            title,
+            title: title.trim(),
             description,
             status,
-            dueDate,
+            dueDate: dueDate || null,
             priority,
             category,
             user: req.user.id, // This connects task to logged-in user and come from Middleware
@@ -116,6 +120,10 @@ const getTasks = async (req, res) => {
 // PUT /api/tasks/:id
 const updateTask = async (req, res) => {
     try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid Task ID" });
+        }
+
         const task = await Task.findById(req.params.id);
 
         // 3️. Check if task exists
@@ -144,7 +152,7 @@ const updateTask = async (req, res) => {
         task.priority = priority ?? task.priority;
         task.category = category ?? task.category;
         if (dueDate !== undefined) {
-            task.dueDate = dueDate;
+            task.dueDate = dueDate || null;
         }
 
         const updatedTask = await task.save();

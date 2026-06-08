@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
       try {
         const userData = await getCurrentUser(storedToken);
         setUser(userData);
-      } catch (error) {
+      } catch {
         console.error("Session restore failed — clearing token.");
         localStorage.removeItem("token");
         setToken(null);

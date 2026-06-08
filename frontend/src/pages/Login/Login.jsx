@@ -43,7 +43,6 @@ function Login() {
       };
       const data = await loginUser(normalizedData);
 
-      console.log(data);
       // Store token through AuthContext
       login(data.token, data.user || null);
 

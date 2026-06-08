@@ -13,8 +13,10 @@ axios.interceptors.response.use(
     }
 );
 
-const USER_API = "http://localhost:5000/api/users";
-const TASK_API = "http://localhost:5000/api/tasks";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const USER_API = `${BASE_URL}/api/users`;
+const TASK_API = `${BASE_URL}/api/tasks`;
 
 // Register
 export const registerUser = async (userData) => {

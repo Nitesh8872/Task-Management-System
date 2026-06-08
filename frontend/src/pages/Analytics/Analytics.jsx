@@ -13,11 +13,30 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  AreaChart,
-  Area,
 } from "recharts";
 import StatCard from "../../components/StatCard/StatCard";
 import "./Analytics.css";
+
+function ChartTooltip({ active, payload }) {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{
+        background: "var(--color-surface)",
+        border: "1px solid var(--color-border)",
+        padding: "10px 14px",
+        borderRadius: "8px",
+        boxShadow: "var(--shadow-card)",
+        fontSize: "13px"
+      }}>
+        <p style={{ margin: 0, fontWeight: 700, color: "var(--color-text-heading)" }}>{payload[0].name}</p>
+        <p style={{ margin: "4px 0 0 0", color: "var(--color-primary)", fontWeight: 600 }}>
+          Count: {payload[0].value}
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
 
 function Analytics() {
   const { token } = useAuth();
@@ -62,9 +81,9 @@ function Analytics() {
   ].filter((d) => d.value > 0);
 
   // ── 2. Calculate Category Metrics ──
-  const work = tasks.filter((t) => t.category === "work").length;
-  const study = tasks.filter((t) => t.category === "study").length;
-  const personal = tasks.filter((t) => t.category === "personal").length;
+  const work = tasksList.filter((t) => t.category === "work").length;
+  const study = tasksList.filter((t) => t.category === "study").length;
+  const personal = tasksList.filter((t) => t.category === "personal").length;
 
   const categoryData = [
     { name: "Work", count: work, color: "#2563eb" },
@@ -73,9 +92,9 @@ function Analytics() {
   ];
 
   // ── 3. Calculate Priority Metrics ──
-  const high = tasks.filter((t) => t.priority === "high").length;
-  const medium = tasks.filter((t) => t.priority === "medium").length;
-  const low = tasks.filter((t) => t.priority === "low").length;
+  const high = tasksList.filter((t) => t.priority === "high").length;
+  const medium = tasksList.filter((t) => t.priority === "medium").length;
+  const low = tasksList.filter((t) => t.priority === "low").length;
 
   const priorityData = [
     { name: "High", count: high, color: "#ef4444" },
@@ -85,28 +104,6 @@ function Analytics() {
 
   // ── 4. Calculate Productivity Rate ──
   const completionRate = total === 0 ? 0 : Math.round((completed / total) * 100);
-
-  // Custom tooltips
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={{
-          background: "var(--color-surface)",
-          border: "1px solid var(--color-border)",
-          padding: "10px 14px",
-          borderRadius: "8px",
-          boxShadow: "var(--shadow-card)",
-          fontSize: "13px"
-        }}>
-          <p style={{ margin: 0, fontWeight: 700, color: "var(--color-text-heading)" }}>{payload[0].name}</p>
-          <p style={{ margin: "4px 0 0 0", color: "var(--color-primary)", fontWeight: 600 }}>
-            Count: {payload[0].value}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="analytics-page">
@@ -174,7 +171,7 @@ function Analytics() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<ChartTooltip />} />
                   <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>
               </ResponsiveContainer>

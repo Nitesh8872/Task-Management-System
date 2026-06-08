@@ -1,5 +1,3 @@
-import React from 'react';
-
 function TaskList({ tasks }) {
     return (
         <div>
@@ -7,8 +5,8 @@ function TaskList({ tasks }) {
                 <p>No tasks yet.</p>
             ) : (
                 <ul>
-                    {tasks.map((task, index) => (
-                        <li key={index} style={{ marginBottom: '10px' }}>
+                    {tasks.map((task) => (
+                        <li key={task._id || task.id} style={{ marginBottom: '10px' }}>
                             <strong>{task.title}</strong>
                             <p>{task.description}</p>
                         </li>

@@ -5,7 +5,6 @@ import { useNotifications } from "../../context/NotificationContext";
 import {
   updateUserProfile,
   getCurrentUser,
-  getTasks,
   deleteUserAccount,
 } from "../../services/api";
 import { formatDate } from "../../utils/formatters";

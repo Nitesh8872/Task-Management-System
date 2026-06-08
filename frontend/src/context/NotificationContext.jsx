@@ -13,7 +13,6 @@ export function NotificationProvider({ children }) {
     localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
-  // Generate notifications based on current tasks
   const checkTasksForNotifications = (tasks) => {
     if (!tasks || tasks.length === 0) return;
 
@@ -23,58 +22,56 @@ export function NotificationProvider({ children }) {
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
 
-    const newNotifications = [...notifications];
-    let changed = false;
+    const isSameDate = (d1, d2) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
 
-    tasks.forEach((task) => {
-      if (task.status === TASK_STATUS.COMPLETED || !task.dueDate) return;
+    setNotifications((prev) => {
+      const newNotifications = [...prev];
+      let changed = false;
 
-      const dueDate = new Date(task.dueDate);
-      dueDate.setHours(0, 0, 0, 0);
+      tasks.forEach((task) => {
+        if (task.status === TASK_STATUS.COMPLETED || !task.dueDate) return;
 
-      const isSameDate = (d1, d2) =>
-        d1.getFullYear() === d2.getFullYear() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getDate() === d2.getDate();
+        const dueDate = new Date(task.dueDate);
+        dueDate.setHours(0, 0, 0, 0);
 
-      let text = "";
-      let type = "";
+        let text = "";
+        let type = "";
 
-      if (isSameDate(dueDate, today)) {
-        text = `Task "${task.title}" is due today!`;
-        type = "info";
-      } else if (isSameDate(dueDate, tomorrow)) {
-        text = `Task "${task.title}" is due tomorrow.`;
-        type = "warning";
-      } else if (dueDate < today) {
-        text = `Task "${task.title}" is overdue!`;
-        type = "error";
-      }
-
-      if (text) {
-        // Check if this notification already exists
-        const exists = newNotifications.some(
-          (n) => n.taskId === task._id && n.type === type
-        );
-
-        if (!exists) {
-          newNotifications.unshift({
-            id: `${task._id}-${type}-${Date.now()}`,
-            taskId: task._id,
-            text,
-            type,
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-          changed = true;
+        if (isSameDate(dueDate, today)) {
+          text = `Task "${task.title}" is due today!`;
+          type = "info";
+        } else if (isSameDate(dueDate, tomorrow)) {
+          text = `Task "${task.title}" is due tomorrow.`;
+          type = "warning";
+        } else if (dueDate < today) {
+          text = `Task "${task.title}" is overdue!`;
+          type = "error";
         }
-      }
-    });
 
-    if (changed) {
-      // Limit to last 50 notifications
-      setNotifications(newNotifications.slice(0, 50));
-    }
+        if (text) {
+          const exists = newNotifications.some(
+            (n) => n.taskId === task._id && n.type === type
+          );
+
+          if (!exists) {
+            newNotifications.unshift({
+              id: `${task._id}-${type}-${Date.now()}`,
+              taskId: task._id,
+              text,
+              type,
+              read: false,
+              createdAt: new Date().toISOString(),
+            });
+            changed = true;
+          }
+        }
+      });
+
+      return changed ? newNotifications.slice(0, 50) : prev;
+    });
   };
 
   const addNotification = (text, type = "info") => {

@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar/Sidebar";
 import Navbar from "../components/Navbar/Navbar";
-import "../styles/App.css";
+import "../styles/app.css";
 
 /**
  * DashboardLayout — wraps any page that needs the sidebar and navbar.

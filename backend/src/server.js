@@ -7,6 +7,15 @@ const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 
 dotenv.config();
+
+const requiredEnv = ["MONGO_URI", "JWT_SECRET"];
+for (const key of requiredEnv) {
+    if (!process.env[key]) {
+        console.error(`Missing required environment variable: ${key}`);
+        process.exit(1);
+    }
+}
+
 connectDB();
 
 const app = express();

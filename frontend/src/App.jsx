@@ -10,10 +10,11 @@ import TasksPage from "./pages/TasksPage/TasksPage";
 import Analytics from "./pages/Analytics/Analytics";
 import Calendar from "./pages/Calendar/Calendar";
 import Profile from "./pages/Profile/Profile";
+import NotFound from "./pages/NotFound/NotFound";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import "./styles/App.css";
+import "./styles/app.css";
 
 function App() {
   return (
@@ -91,8 +92,7 @@ function App() {
                 }
               />
 
-              {/* Catch-all fallback */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
+              <Route path="*" element={<NotFound />} />
 
             </Routes>
           </BrowserRouter>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Link } from "react-router-dom";
-import { getTasks, createTask, updateTask } from "../../services/api";
+import { createTask, updateTask } from "../../services/api";
 import { logActivity } from "../../utils/activityLogger";
 import { useNotifications } from "../../context/NotificationContext";
 import { useAuth } from "../../context/AuthContext";
