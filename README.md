@@ -1,6 +1,6 @@
 # 📋 TaskHub — MERN Stack Task Management System
 
-> A full-stack, feature-rich Task Management Web Application built with MongoDB, Express.js, React.js, and Node.js.
+> TaskHub is a modern full-stack Task Management System built with MongoDB, Express.js, React.js, and Node.js. It provides secure user authentication, task creation and management, advanced filtering, Kanban board drag-and-drop functionality, calendar scheduling, and real-time analytics dashboards. The application is fully responsive and deployed using Netlify, Railway, and MongoDB Atlas.
 
 ---
 
