@@ -4,32 +4,35 @@ const User = require("../models/user");
 const protect = async (req, res, next) => {
     let token;
 
-    // 1️. Check if Authorization header exists and starts with "Bearer"
+    // 1. Check if Authorization header exists and starts with "Bearer"
     if (
         req.headers.authorization &&
         req.headers.authorization.startsWith("Bearer")
     ) {
         try {
-            // 2️. Get token from header
+            // 2. Get token from header
             token = req.headers.authorization.split(" ")[1];
-            console.log("TOKEN RECEIVED:", token);
-            // 3️. Verify token
+
+            // 3. Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log("DECODED:", decoded);
-            // 4️. Get user from token and attach to req.user (exclude password)
+
+            // 4. Get user from token and attach to req.user (exclude password)
             req.user = await User.findById(decoded.id).select("-password");
-            console.log("USER:", req.user);
-            // 5️. Call next middleware/controller
-            next();
+
+            // 5. Check if user still exists in database
+            if (!req.user) {
+                return res.status(401).json({ message: "User not found" });
+            }
+
+            // 6. Proceed
+            return next();
         } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: "Not authorized, token failed" });
+            return res.status(401).json({ message: "Not authorized, token failed" });
         }
     }
 
-    if (!token) {
-        res.status(401).json({ message: "Not authorized, no token" });
-    }
+    // No token present at all
+    return res.status(401).json({ message: "Not authorized, no token" });
 };
 
 module.exports = { protect };

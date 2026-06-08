@@ -10,6 +10,7 @@ import {
 } from "../../services/api";
 import { formatDate } from "../../utils/formatters";
 import { logActivity, getActivities } from "../../utils/activityLogger";
+import { getAllTasks } from "../../services/api";
 import "./Profile.css";
 
 function Profile() {
@@ -53,8 +54,8 @@ function Profile() {
         setName(freshUser.name);
         setUsername(freshUser.name.toLowerCase().replace(/\s+/g, ""));
 
-        const fetchedTasks = await getTasks(token);
-        setTasks(fetchedTasks);
+        const fetchedTasks = await getAllTasks(token);
+        setTasks(fetchedTasks.tasks || []);
 
         setActivities(getActivities(freshUser.id));
         setAvatar(localStorage.getItem(`avatar_${freshUser.id}`));
@@ -83,9 +84,11 @@ function Profile() {
     reader.onloadend = () => {
       const b64 = reader.result;
       setAvatar(b64);
-      localStorage.setItem(`avatar_${user.id}`, b64);
+      if (user?.id) {
+        localStorage.setItem(`avatar_${user.id}`, b64);
+      }
       window.dispatchEvent(new Event("avatar-updated"));
-      logActivity(user.id, "Updated profile photo");
+      logActivity(user?.id, "Updated profile photo");
       showToast("Avatar updated successfully!");
     };
     reader.readAsDataURL(file);
@@ -99,7 +102,7 @@ function Profile() {
     try {
       const data = await updateUserProfile({ name }, token);
       setUser({ ...user, name: data.name });
-      logActivity(user.id, `Updated name to "${data.name}"`);
+      logActivity(user?.id, `Updated name to "${data.name}"`);
       showToast("Account details saved!");
     } catch (err) {
       console.error(err);
@@ -123,15 +126,16 @@ function Profile() {
     }
     setLoading(true);
     try {
-      await updateUserProfile({ password: newPassword }, token);
+      await updateUserProfile({ currentPassword, password: newPassword }, token);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      logActivity(user.id, "Changed account password");
+      logActivity(user?.id, "Changed account password");
       showToast("Password updated successfully!");
     } catch (err) {
       console.error(err);
-      addNotification("Failed to update password.", "error");
+      const errorMsg = err.response?.data?.message || "Failed to update password.";
+      addNotification(errorMsg, "error");
     } finally {
       setLoading(false);
     }
@@ -174,9 +178,12 @@ function Profile() {
   };
   const strength = getStrength(newPassword);
 
+  // Handle API response
+  const tasksList = Array.isArray(tasks) ? tasks : [];
+
   /* ──────────────── Derived metrics ──────────────── */
-  const totalTasks = tasks.length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
+  const totalTasks = tasksList.length;
+  const completed = tasksList.filter((t) => t.status === "completed").length;
   const pending = totalTasks - completed;
   const rate = totalTasks === 0 ? 0 : Math.round((completed / totalTasks) * 100);
 

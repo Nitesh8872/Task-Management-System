@@ -189,6 +189,26 @@
   border-color: var(--color-primary);
 }
 
+/* Clear Filters button — danger-tinted pill, sits beside filter chips */
+.clear-filters-btn {
+  background: transparent;
+  border: 1px solid var(--color-danger, #ef4444);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-danger, #ef4444);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+  align-self: center;
+}
+
+.clear-filters-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--color-danger, #ef4444);
+}
+
 /* ── Tasks Grid View ── */
 .tasks-list-grid {
   display: grid;
@@ -222,6 +242,43 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   margin-bottom: 24px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+
+  margin-top: 32px;
+  padding: 20px;
+}
+
+.pagination button {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.pagination button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-body);
 }
 
 @media (max-width: 768px) {

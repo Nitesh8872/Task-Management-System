@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getTasks } from "../../services/api";
+import { getAllTasks } from "../../services/api";
 import { TASK_STATUS } from "../../utils/taskStatus";
 import {
   ResponsiveContainer,
@@ -27,8 +27,8 @@ function Analytics() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const data = await getTasks(token);
-        setTasks(data);
+        const data = await getAllTasks(token);
+        setTasks(data.tasks || []);
       } catch (err) {
         console.error("Failed to fetch analytics tasks:", err);
       } finally {
@@ -46,11 +46,14 @@ function Analytics() {
     );
   }
 
+  // Handle API response
+  const tasksList = Array.isArray(tasks) ? tasks : [];
+
   // ── 1. Calculate Status Metrics ──
-  const total = tasks.length;
-  const completed = tasks.filter((t) => t.status === TASK_STATUS.COMPLETED).length;
-  const inProgress = tasks.filter((t) => t.status === TASK_STATUS.IN_PROGRESS).length;
-  const pending = tasks.filter((t) => t.status === TASK_STATUS.PENDING).length;
+  const total = tasksList.length;
+  const completed = tasksList.filter((t) => t.status === TASK_STATUS.COMPLETED).length;
+  const inProgress = tasksList.filter((t) => t.status === TASK_STATUS.IN_PROGRESS).length;
+  const pending = tasksList.filter((t) => t.status === TASK_STATUS.PENDING).length;
 
   const statusData = [
     { name: "Pending", value: pending, color: "#f59e0b" },

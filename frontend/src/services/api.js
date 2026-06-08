@@ -1,5 +1,18 @@
 import axios from "axios";
 
+// Add Axios response interceptor for 401 errors
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.setItem("showSessionExpired", "true");
+            window.location.href = "/login";
+        }
+        return Promise.reject(error);
+    }
+);
+
 const USER_API = "http://localhost:5000/api/users";
 const TASK_API = "http://localhost:5000/api/tasks";
 
@@ -38,16 +51,51 @@ export const getCurrentUser = async (token) => {
     return response.data;
 };
 
-// Get all tasks
-export const getTasks = async (token) => {
+// Get tasks
+export const getTasks = async (
+    token,
+    {
+        page = 1,
+        limit = 9,
+        search = "",
+        status = "all",
+        priority = "all",
+        category = "all",
+        sort = "newest",
+    } = {}
+) => {
     const response = await axios.get(
         TASK_API,
         {
+            params: {
+                page,
+                limit,
+                search,
+                status,
+                priority,
+                category,
+                sort,
+            },
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         }
     );
+
+    return response.data;
+};
+
+// Get all tasks (no pagination, for analytics & calendar)
+export const getAllTasks = async (token) => {
+    const response = await axios.get(TASK_API, {
+        params: {
+            page: 1,
+            limit: 1000,
+        },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
     return response.data;
 };

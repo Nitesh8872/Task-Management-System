@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 const Task = require("../models/task");
 
+// ── Helper: Escape Regex ──
+const escapeRegex = (text) => {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
 // Create new task
 // POST /api/tasks
 const createTask = async (req, res) => {
@@ -36,10 +41,71 @@ const createTask = async (req, res) => {
 // GET /api/tasks
 const getTasks = async (req, res) => {
     try {
-        // 2️. Find tasks where user matches logged-in user's id
-        const tasks = await Task.find({ user: req.user.id });
+        // 2️. Pagination logic here
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 9;
+        const skip = (page - 1) * limit;
 
-        res.status(200).json(tasks);
+        const query = {
+            user: req.user.id,
+        };
+
+        if (req.query.search) {
+            const escapedSearch = escapeRegex(req.query.search);
+            query.title = {
+                $regex: escapedSearch,
+                $options: "i",
+            };
+        }
+
+        if (req.query.status && req.query.status !== "all") {
+            query.status = req.query.status;
+        }
+
+        if (req.query.priority && req.query.priority !== "all") {
+            query.priority = req.query.priority;
+        }
+
+        if (req.query.category && req.query.category !== "all") {
+            query.category = req.query.category;
+        }
+
+        let sortOption = {
+            createdAt: -1,
+        };
+
+        if (req.query.sort === "oldest") {
+            sortOption = {
+                createdAt: 1,
+            };
+        }
+
+        if (req.query.sort === "dueDate") {
+            sortOption = {
+                dueDate: 1,
+            };
+        }
+
+        if (req.query.sort === "status") {
+            sortOption = {
+                status: 1,
+            };
+        }
+
+        // 3️. Find tasks where user matches logged-in user's id
+        const tasks = await Task.find(query).sort(sortOption).skip(skip).limit(limit);
+
+        // 4️. Count total tasks
+        const totalTasks = await Task.countDocuments(query);
+
+        res.status(200).json({
+            tasks,
+            page,
+            limit,
+            totalTasks,
+            totalPages: Math.ceil(totalTasks / limit),
+        });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
@@ -71,12 +137,15 @@ const updateTask = async (req, res) => {
             priority,
             category,
         } = req.body;
-        task.title = title || task.title;
-        task.description = description || task.description;
-        task.status = status || task.status;
-        task.dueDate = dueDate || task.dueDate;
-        task.priority = priority || task.priority;
-        task.category = category || task.category;
+
+        task.title = title ?? task.title;
+        task.description = description ?? task.description;
+        task.status = status ?? task.status;
+        task.priority = priority ?? task.priority;
+        task.category = category ?? task.category;
+        if (dueDate !== undefined) {
+            task.dueDate = dueDate;
+        }
 
         const updatedTask = await task.save();
         res.status(200).json(updatedTask);

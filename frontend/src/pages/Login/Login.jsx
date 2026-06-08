@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { loginUser } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 import "./Login.css";
 
 function Login() {
   const { token, login } = useAuth();
+  const { addNotification } = useNotifications();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    if (localStorage.getItem("showSessionExpired") === "true") {
+      addNotification("Session expired. Please log in again.", "warning");
+      localStorage.removeItem("showSessionExpired");
+    }
+  }, [addNotification]);
 
   // Redirect authenticated users
   if (token) {
@@ -28,7 +37,11 @@ function Login() {
     e.preventDefault();
 
     try {
-      const data = await loginUser(formData);
+      const normalizedData = {
+        ...formData,
+        email: formData.email.toLowerCase().trim(),
+      };
+      const data = await loginUser(normalizedData);
 
       console.log(data);
       // Store token through AuthContext
@@ -36,7 +49,7 @@ function Login() {
 
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login Failed. Please check your credentials.");
+      addNotification("Login Failed. Please check your credentials.", "error");
     }
   };
 

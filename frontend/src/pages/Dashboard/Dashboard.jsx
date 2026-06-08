@@ -6,6 +6,7 @@ import { useNotifications } from "../../context/NotificationContext";
 import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/formatters";
 import { TASK_STATUS } from "../../utils/taskStatus";
+import { getAllTasks } from "../../services/api";
 import StatCard from "../../components/StatCard/StatCard";
 import ActivityList from "../../components/ActivityList/ActivityList";
 import TaskModal from "../../components/TaskModal/TaskModal";
@@ -26,13 +27,14 @@ function Dashboard() {
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("medium");
   const [category, setCategory] = useState("personal");
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchDashboardData = async () => {
     if (!token) return;
     try {
-      const data = await getTasks(token);
-      setTasks(data);
-      checkTasksForNotifications(data);
+      const data = await getAllTasks(token);
+      setTasks(data.tasks || []);
+      checkTasksForNotifications(data.tasks || []);
     } catch (error) {
       console.error("Failed to fetch dashboard tasks:", error);
     } finally {
@@ -60,30 +62,33 @@ function Dashboard() {
   const handleCreateTask = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
+    setSubmitting(true);
 
     try {
-      const newTask = await createTask(
+      await createTask(
         { title, description, dueDate, priority, category },
         token
       );
-      setTasks((prev) => [...prev, newTask]);
       setIsCreateModalOpen(false);
 
       logActivity(user?.id, `Created task "${title}" via dashboard`);
       addNotification(`Task "${title}" created successfully!`, "success");
+      fetchDashboardData();
     } catch (err) {
       console.error(err);
       addNotification("Failed to create task", "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleQuickComplete = async (taskId, taskTitle) => {
     try {
-      const updated = await updateTask(taskId, { status: TASK_STATUS.COMPLETED }, token);
-      setTasks((prev) => prev.map((t) => (t._id === taskId ? updated : t)));
+      await updateTask(taskId, { status: TASK_STATUS.COMPLETED }, token);
 
       logActivity(user?.id, `Marked task "${taskTitle}" Completed`);
       addNotification(`Task "${taskTitle}" marked Completed!`, "success");
+      fetchDashboardData();
     } catch (err) {
       console.error(err);
       addNotification("Failed to complete task", "error");
@@ -95,11 +100,14 @@ function Dashboard() {
     return <Navigate to="/login" replace />;
   }
 
+  // Handle API response
+  const taskList = Array.isArray(tasks) ? tasks : [];
+
   // ── Metrics Calculations ──
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === TASK_STATUS.COMPLETED).length;
-  const inProgressTasks = tasks.filter((t) => t.status === TASK_STATUS.IN_PROGRESS).length;
-  const pendingTasks = tasks.filter((t) => t.status === TASK_STATUS.PENDING).length;
+  const totalTasks = taskList.length;
+  const completedTasks = taskList.filter((t) => t.status === TASK_STATUS.COMPLETED).length;
+  const inProgressTasks = taskList.filter((t) => t.status === TASK_STATUS.IN_PROGRESS).length;
+  const pendingTasks = taskList.filter((t) => t.status === TASK_STATUS.PENDING).length;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -318,6 +326,7 @@ function Dashboard() {
         setPriority={setPriority}
         category={category}
         setCategory={setCategory}
+        loading={submitting}
       />
     </div>
   );

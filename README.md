@@ -48,6 +48,10 @@
 | **🔒 Protected Routes** | React-side route guard redirects unauthenticated users to login |
 | **📱 Responsive Design** | Mobile-friendly layout using CSS Grid and media queries |
 | **🌙 Dark-themed UI** | Premium dark-mode design system with glassmorphism cards and smooth animations |
+| **📊 Server-side Pagination** | Paginated task rendering (9 tasks/page) to handle high volumes of tasks efficiently |
+| **🔍 Backend Search** | Case-insensitive keyword search on task titles performed directly in the database |
+| **🎛️ Backend Filtering** | Database-level task filtering by status, priority level, and categories |
+| **🔃 Backend Sorting** | Sorting options by newest first, oldest first, due dates, and status at the database layer |
 
 ---
 
@@ -102,6 +106,31 @@ Task Management System/
 | **Database** | MongoDB with Mongoose |
 | **Authentication** | JWT (jsonwebtoken) + bcryptjs |
 | **Dev Server** | Nodemon |
+
+---
+
+## 🔧 Engineering Improvements & Stability Enhancements
+
+Beyond the assignment requirements, the application underwent several stability, security, and data-consistency improvements during development:
+
+### Reliability Fixes
+
+* Resolved runtime crashes in Dashboard, Analytics, Calendar, and Profile pages caused by incorrect handling of paginated API responses.
+* Fixed data-loading issues to ensure analytics, calendar events, and productivity metrics always use complete task datasets rather than paginated subsets.
+* Improved frontend defensive state handling to prevent invalid state access and rendering failures.
+
+### Security Improvements
+
+* Protected backend search functionality against malformed regular expression input and potential denial-of-service scenarios.
+* Improved authentication middleware to safely handle deleted-user JWT sessions and prevent server-side failures from stale tokens.
+
+### Data Integrity Improvements
+
+* Fixed task update behavior to correctly support clearing optional fields such as descriptions and due dates.
+* Corrected analytics calculations and dashboard metrics for users with more than nine tasks.
+* Improved consistency between frontend state and backend task data across multiple views.
+
+These improvements significantly increased application stability, security, and overall production readiness while preserving existing functionality.
 
 ---
 
@@ -181,8 +210,8 @@ The app will be running at: **http://localhost:5173**
 | `POST` | `/api/users/register` | Register a new user | ❌ |
 | `POST` | `/api/users/login` | Login and receive JWT token | ❌ |
 | `GET` | `/api/users/me` | Get current logged-in user | ✅ |
-| `PUT` | `/api/users/me` | Update profile (name / password) | ✅ |
-| `DELETE` | `/api/users/me` | Permanently delete account | ✅ |
+| `PUT` | `/api/users/profile` | Update profile (name / password) | ✅ |
+| `DELETE` | `/api/users/profile` | Permanently delete account | ✅ |
 
 ### Task Routes — `/api/tasks`
 
@@ -192,6 +221,43 @@ The app will be running at: **http://localhost:5173**
 | `POST` | `/api/tasks` | Create a new task | ✅ |
 | `PUT` | `/api/tasks/:id` | Update a task by ID | ✅ |
 | `DELETE` | `/api/tasks/:id` | Delete a task by ID | ✅ |
+
+**Query Parameters for `GET /api/tasks`:**
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `page` | `Number` | `1` | Page number for server-side pagination |
+| `limit` | `Number` | `9` | Number of tasks to return per page |
+| `search` | `String` | `""` | Search term matched against task titles (case-insensitive) |
+| `status` | `String` | `"all"` | Filter tasks by status (`pending`, `in-progress`, `completed`, or `all`) |
+| `priority` | `String` | `"all"` | Filter tasks by priority (`low`, `medium`, `high`, or `all`) |
+| `category` | `String` | `"all"` | Filter tasks by category (`work`, `study`, `personal`, or `all`) |
+| `sort` | `String` | `"newest"` | Sort order (`newest`, `oldest`, `dueDate`, `status`) |
+
+**Response Format for `GET /api/tasks`:**
+
+```js
+{
+  "tasks": [
+    {
+      "_id": "60d0fe4f5311236168a109ca",
+      "title": "Complete Project Proposal",
+      "description": "Draft the final project scope and milestones",
+      "status": "pending",
+      "priority": "high",
+      "category": "work",
+      "dueDate": "2026-06-15T00:00:00.000Z",
+      "user": "60d0fe4f5311236168a109c9",
+      "createdAt": "2026-06-08T04:23:15.000Z",
+      "updatedAt": "2026-06-08T04:23:15.000Z"
+    }
+  ],
+  "page": 1,
+  "limit": 9,
+  "totalTasks": 1,
+  "totalPages": 1
+}
+```
 
 ---
 
@@ -237,6 +303,13 @@ The app will be running at: **http://localhost:5173**
 | Analytics | `/analytics` | Charts: task status, priority, category breakdown |
 | Calendar | `/calendar` | Monthly calendar with tasks pinned to due dates |
 | Profile | `/profile` | Account management, avatar, password change |
+
+**Tasks Page Workspace Capabilities:**
+- **Layout Toggle:** Switch between a card grid list view and a Kanban board with drag-and-drop support (persisted via `localStorage`).
+- **Interactive Modals:** Create new tasks or edit existing ones via inline modals with real-time updates.
+- **Search & Filters:** Real-time query system allows filtering by title, status, priority, and category.
+- **Sorting Options:** Sort tasks by newest first, oldest first, due date, or status.
+- **Server-Side Pagination:** Quick navigation through paginated task sets (9 tasks per page).
 
 ---
 

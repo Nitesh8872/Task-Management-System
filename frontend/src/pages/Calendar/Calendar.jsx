@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getTasks } from "../../services/api";
+import { getAllTasks } from "../../services/api";
 import { TASK_STATUS, TASK_STATUS_LABELS } from "../../utils/taskStatus";
 import "./Calendar.css";
 
@@ -13,8 +13,8 @@ function Calendar() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const data = await getTasks(token);
-        setTasks(data);
+        const data = await getAllTasks(token);
+        setTasks(data.tasks || []);
       } catch (err) {
         console.error("Failed to fetch calendar tasks:", err);
       } finally {
@@ -49,7 +49,10 @@ function Calendar() {
       </div>
     );
   }
+  // Handle API response
+  const tasksList = Array.isArray(tasks) ? tasks : [];
 
+  //Metrics Calculations
   // Get calendar days grid
   const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
   const getFirstDayOfMonth = (y, m) => new Date(y, m, 1).getDay();
@@ -86,7 +89,7 @@ function Calendar() {
   // Get tasks for a specific date
   const getTasksForDate = (date) => {
     if (!date) return [];
-    return tasks.filter((t) => {
+    return tasksList.filter((t) => {
       if (!t.dueDate) return false;
       const dDate = new Date(t.dueDate);
       return (
