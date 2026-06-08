@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import { getTasks, createTask, deleteTask, updateTask } from "../../services/api";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import { logActivity } from "../../utils/activityLogger";
 import { TASK_STATUS, TASK_STATUS_LABELS, TASK_STATUS_OPTIONS } from "../../utils/taskStatus";
 import TaskCard from "../../components/TaskCard/TaskCard";
 import TaskBoard from "../../components/TaskBoard/TaskBoard";
 import TaskModal from "../../components/TaskModal/TaskModal";
 import ConfirmationModal from "../../components/ConfirmationModal/ConfirmationModal";
+import PageErrorBanner from "../../components/PageError/PageErrorBanner";
 import "./TasksPage.css";
 
 const LIST_PAGE_SIZE = 9;
@@ -19,6 +21,7 @@ function TasksPage() {
 
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalTasks, setTotalTasks] = useState(0);
@@ -35,6 +38,7 @@ function TasksPage() {
   const [sortOrder, setSortOrder] = useState("newest");
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -42,6 +46,7 @@ function TasksPage() {
   const [category, setCategory] = useState("work");
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -65,8 +70,9 @@ function TasksPage() {
 
   const fetchTasks = useCallback(async () => {
     if (!token) return;
+    setFetchError("");
+    setLoading(true);
     try {
-      setLoading(true);
       const isBoard = viewMode === "board";
       const data = await getTasks(token, {
         page: isBoard ? 1 : page,
@@ -83,8 +89,9 @@ function TasksPage() {
       setTotalTasks(data.totalTasks || 0);
       checkTasksForNotifications(taskList);
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to load tasks", "error");
+      const msg = getErrorMessage(err, "Failed to load tasks.");
+      setFetchError(msg);
+      addNotification(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -118,25 +125,34 @@ function TasksPage() {
     setIsCreateModalOpen(true);
   };
 
-  const closeCreateModal = () => setIsCreateModalOpen(false);
-  const closeEditModal = () => setIsEditModalOpen(false);
+  const closeCreateModal = () => {
+    if (isSubmittingCreate) return;
+    setIsCreateModalOpen(false);
+  };
+
+  const closeEditModal = () => {
+    if (isSubmittingEdit) return;
+    setIsEditModalOpen(false);
+  };
 
   const handleCreateTaskSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || isSubmittingCreate) return;
 
+    setIsSubmittingCreate(true);
     try {
       await createTask(
         { title, description, dueDate: dueDate || null, priority, category },
         token
       );
       setIsCreateModalOpen(false);
-      logActivity(user.id, `Created task "${title}"`);
+      logActivity(user?.id, `Created task "${title}"`);
       addNotification(`Task "${title}" created successfully!`, "success");
       fetchTasks();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to create task", "error");
+      addNotification(getErrorMessage(err, "Failed to create task."), "error");
+    } finally {
+      setIsSubmittingCreate(false);
     }
   };
 
@@ -153,6 +169,9 @@ function TasksPage() {
 
   const handleSaveEditSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmittingEdit) return;
+
+    setIsSubmittingEdit(true);
     try {
       await updateTask(
         editingTaskId,
@@ -167,12 +186,13 @@ function TasksPage() {
         token
       );
       setIsEditModalOpen(false);
-      logActivity(user.id, `Updated task "${editTitle}"`);
+      logActivity(user?.id, `Updated task "${editTitle}"`);
       addNotification(`Task "${editTitle}" updated!`, "success");
       fetchTasks();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to update task", "error");
+      addNotification(getErrorMessage(err, "Failed to update task."), "error");
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -180,12 +200,11 @@ function TasksPage() {
     try {
       const target = tasks.find((t) => t._id === taskId);
       await updateTask(taskId, { status: TASK_STATUS.COMPLETED }, token);
-      logActivity(user.id, `Marked task "${target?.title}" Completed`);
+      logActivity(user?.id, `Marked task "${target?.title}" Completed`);
       addNotification(`Task "${target?.title}" marked Completed!`, "success");
       fetchTasks();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to complete task", "error");
+      addNotification(getErrorMessage(err, "Failed to complete task."), "error");
     }
   };
 
@@ -194,12 +213,11 @@ function TasksPage() {
       const target = tasks.find((t) => t._id === taskId);
       await updateTask(taskId, { status: newStatus }, token);
       const label = TASK_STATUS_LABELS[newStatus] || newStatus;
-      logActivity(user.id, `Moved task "${target?.title}" to ${label}`);
+      logActivity(user?.id, `Moved task "${target?.title}" to ${label}`);
       addNotification(`Task moved to ${label}`, "info");
       fetchTasks();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to drag and move task", "error");
+      addNotification(getErrorMessage(err, "Failed to move task."), "error");
     }
   };
 
@@ -221,14 +239,13 @@ function TasksPage() {
     try {
       const target = tasks.find((t) => t._id === taskToDeleteId);
       await deleteTask(taskToDeleteId, token);
-      logActivity(user.id, `Deleted task "${target?.title}"`);
+      logActivity(user?.id, `Deleted task "${target?.title}"`);
       addNotification("Task deleted successfully.", "success");
       setIsDeleteModalOpen(false);
       setTaskToDeleteId(null);
       fetchTasks();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to delete task", "error");
+      addNotification(getErrorMessage(err, "Failed to delete task."), "error");
     } finally {
       setIsDeleting(false);
     }
@@ -263,6 +280,10 @@ function TasksPage() {
           </button>
         </div>
       </div>
+
+      {fetchError && (
+        <PageErrorBanner message={fetchError} onRetry={fetchTasks} />
+      )}
 
       <div className="tasks-control-panel">
         <div className="search-row">
@@ -336,7 +357,7 @@ function TasksPage() {
 
       {loading ? (
         <p style={{ color: "var(--color-text-muted)" }}>Loading workspace tasks...</p>
-      ) : tasks.length === 0 ? (
+      ) : fetchError ? null : tasks.length === 0 ? (
         <div className="tasks-empty-state">
           <span>📝</span>
           <h3>No tasks matched filters</h3>
@@ -404,6 +425,7 @@ function TasksPage() {
         setPriority={setPriority}
         category={category}
         setCategory={setCategory}
+        loading={isSubmittingCreate}
       />
 
       <TaskModal
@@ -423,6 +445,7 @@ function TasksPage() {
         setCategory={setEditCategory}
         status={editStatus}
         setStatus={setEditStatus}
+        loading={isSubmittingEdit}
       />
 
       <ConfirmationModal

@@ -1,32 +1,41 @@
 import { useState, useEffect } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useLocation } from "react-router-dom";
 import { loginUser } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import "./Login.css";
 
 function Login() {
   const { token, login } = useAuth();
   const { addNotification } = useNotifications();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [sessionNotice, setSessionNotice] = useState(
+    () => (location.state?.registered ? "Account created successfully! Please sign in." : "")
+  );
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("showSessionExpired") === "true") {
-      addNotification("Session expired. Please log in again.", "warning");
+      const msg = "Session expired. Please log in again.";
+      setSessionNotice(msg);
+      addNotification(msg, "warning");
       localStorage.removeItem("showSessionExpired");
     }
   }, [addNotification]);
 
-  // Redirect authenticated users
   if (token) {
     return <Navigate to="/dashboard" replace />;
   }
 
   const handleChange = (e) => {
+    setError("");
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -35,6 +44,8 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
     try {
       const normalizedData = {
@@ -42,13 +53,13 @@ function Login() {
         email: formData.email.toLowerCase().trim(),
       };
       const data = await loginUser(normalizedData);
-
-      // Store token through AuthContext
       login(data.token, data.user || null);
-
-    } catch (error) {
-      console.error("Login failed:", error);
-      addNotification("Login Failed. Please check your credentials.", "error");
+    } catch (err) {
+      const msg = getErrorMessage(err, "Login failed. Please check your credentials.");
+      setError(msg);
+      addNotification(msg, "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -62,10 +73,25 @@ function Login() {
           <p>Sign in to your SmartDesk account</p>
         </div>
 
+        {sessionNotice && (
+          <div
+            className={`auth-alert ${location.state?.registered ? "auth-alert--success" : "auth-alert--warning"}`}
+            role="status"
+          >
+            {sessionNotice}
+          </div>
+        )}
+
         <form
           className="login-form"
           onSubmit={handleSubmit}
         >
+          {error && (
+            <div className="auth-alert auth-alert--error" role="alert">
+              {error}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="login-email">
               Email Address
@@ -79,6 +105,7 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               required
+              disabled={submitting}
             />
           </div>
 
@@ -95,14 +122,16 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               required
+              disabled={submitting}
             />
           </div>
 
           <button
             type="submit"
             className="login-submit-btn"
+            disabled={submitting}
           >
-            Sign In
+            {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
 

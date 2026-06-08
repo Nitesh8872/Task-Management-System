@@ -1,28 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 import { getAllTasks } from "../../services/api";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import PageErrorBanner from "../../components/PageError/PageErrorBanner";
 import { TASK_STATUS, TASK_STATUS_LABELS } from "../../utils/taskStatus";
 import "./Calendar.css";
 
 function Calendar() {
   const { token } = useAuth();
+  const { addNotification } = useNotifications();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [currentDate, setCurrentDate] = useState(new Date());
 
+  const fetchTasks = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getAllTasks(token);
+      setTasks(data.tasks || []);
+    } catch (err) {
+      const msg = getErrorMessage(err, "Failed to load calendar tasks.");
+      setError(msg);
+      addNotification(msg, "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [token, addNotification]);
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const data = await getAllTasks(token);
-        setTasks(data.tasks || []);
-      } catch (err) {
-        console.error("Failed to fetch calendar tasks:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTasks();
-  }, [token]);
+  }, [fetchTasks]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -49,6 +60,21 @@ function Calendar() {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <div className="calendar-page">
+        <div className="calendar-header">
+          <div className="calendar-title">
+            <h1>Task Calendar</h1>
+            <p>Visually plan and view your task milestones monthly.</p>
+          </div>
+        </div>
+        <PageErrorBanner message={error} onRetry={fetchTasks} />
+      </div>
+    );
+  }
+
   // Handle API response
   const tasksList = Array.isArray(tasks) ? tasks : [];
 

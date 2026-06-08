@@ -7,7 +7,9 @@ import { useAuth } from "../../context/AuthContext";
 import { formatDate } from "../../utils/formatters";
 import { TASK_STATUS } from "../../utils/taskStatus";
 import { getAllTasks } from "../../services/api";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import StatCard from "../../components/StatCard/StatCard";
+import PageErrorBanner from "../../components/PageError/PageErrorBanner";
 import ActivityList from "../../components/ActivityList/ActivityList";
 import TaskModal from "../../components/TaskModal/TaskModal";
 import "./Dashboard.css";
@@ -19,6 +21,7 @@ function Dashboard() {
   // Tasks State
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
   // ── Create Modal State ──
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -31,12 +34,16 @@ function Dashboard() {
 
   const fetchDashboardData = async () => {
     if (!token) return;
+    setFetchError("");
+    setLoading(true);
     try {
       const data = await getAllTasks(token);
       setTasks(data.tasks || []);
       checkTasksForNotifications(data.tasks || []);
     } catch (error) {
-      console.error("Failed to fetch dashboard tasks:", error);
+      const msg = getErrorMessage(error, "Could not load dashboard data.");
+      setFetchError(msg);
+      addNotification(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -75,8 +82,7 @@ function Dashboard() {
       addNotification(`Task "${title}" created successfully!`, "success");
       fetchDashboardData();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to create task", "error");
+      addNotification(getErrorMessage(err, "Failed to create task."), "error");
     } finally {
       setSubmitting(false);
     }
@@ -90,8 +96,7 @@ function Dashboard() {
       addNotification(`Task "${taskTitle}" marked Completed!`, "success");
       fetchDashboardData();
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to complete task", "error");
+      addNotification(getErrorMessage(err, "Failed to complete task."), "error");
     }
   };
 
@@ -150,6 +155,10 @@ function Dashboard() {
         <h1>Welcome Back, {user?.name || "User"} 👋</h1>
         <p>Here is an overview of your workspace productivity and timelines.</p>
       </div>
+
+      {fetchError && (
+        <PageErrorBanner message={fetchError} onRetry={fetchDashboardData} />
+      )}
 
       {/* Stats Cards Row */}
       <div className="stats-section-grid">

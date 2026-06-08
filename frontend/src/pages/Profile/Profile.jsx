@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
@@ -6,10 +6,12 @@ import {
   updateUserProfile,
   getCurrentUser,
   deleteUserAccount,
+  getAllTasks,
 } from "../../services/api";
 import { formatDate } from "../../utils/formatters";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import { logActivity, getActivities } from "../../utils/activityLogger";
-import { getAllTasks } from "../../services/api";
+import PageErrorBanner from "../../components/PageError/PageErrorBanner";
 import "./Profile.css";
 
 function Profile() {
@@ -41,29 +43,39 @@ function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [toastMessage, setToastMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [initError, setInitError] = useState("");
+  const [initLoading, setInitLoading] = useState(true);
+  const [savingName, setSavingName] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
-  /* ──────────────── Initialise page data ──────────────── */
+  const initProfile = useCallback(async () => {
+    if (!token) return;
+    setInitLoading(true);
+    setInitError("");
+    try {
+      const freshUser = await getCurrentUser(token);
+      setUser(freshUser);
+      setName(freshUser.name);
+      setUsername(freshUser.name.toLowerCase().replace(/\s+/g, ""));
+
+      const fetchedTasks = await getAllTasks(token);
+      setTasks(fetchedTasks.tasks || []);
+
+      setActivities(getActivities(freshUser.id));
+      setAvatar(localStorage.getItem(`avatar_${freshUser.id}`));
+    } catch (err) {
+      const msg = getErrorMessage(err, "Failed to load account data.");
+      setInitError(msg);
+      addNotification(msg, "error");
+    } finally {
+      setInitLoading(false);
+    }
+  }, [token, setUser, addNotification]);
+
   useEffect(() => {
-    const init = async () => {
-      if (!token) return;
-      try {
-        const freshUser = await getCurrentUser(token);
-        setUser(freshUser);
-        setName(freshUser.name);
-        setUsername(freshUser.name.toLowerCase().replace(/\s+/g, ""));
-
-        const fetchedTasks = await getAllTasks(token);
-        setTasks(fetchedTasks.tasks || []);
-
-        setActivities(getActivities(freshUser.id));
-        setAvatar(localStorage.getItem(`avatar_${freshUser.id}`));
-      } catch (err) {
-        console.error("Account center init error:", err);
-      }
-    };
-    init();
-  }, [token, setUser]);
+    initProfile();
+  }, [initProfile]);
 
   /* ──────────────── Toast helper ──────────────── */
   const showToast = (msg) => {
@@ -90,6 +102,9 @@ function Profile() {
       logActivity(user?.id, "Updated profile photo");
       showToast("Avatar updated successfully!");
     };
+    reader.onerror = () => {
+      addNotification("Failed to read image file. Please try another.", "error");
+    };
     reader.readAsDataURL(file);
   };
 
@@ -97,17 +112,16 @@ function Profile() {
   const handleUpdateName = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    setLoading(true);
+    setSavingName(true);
     try {
       const data = await updateUserProfile({ name }, token);
       setUser({ ...user, name: data.name });
       logActivity(user?.id, `Updated name to "${data.name}"`);
       showToast("Account details saved!");
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to update account details.", "error");
+      addNotification(getErrorMessage(err, "Failed to update account details."), "error");
     } finally {
-      setLoading(false);
+      setSavingName(false);
     }
   };
 
@@ -123,7 +137,7 @@ function Profile() {
       addNotification("Password must be at least 6 characters.", "error");
       return;
     }
-    setLoading(true);
+    setSavingPassword(true);
     try {
       await updateUserProfile({ currentPassword, password: newPassword }, token);
       setCurrentPassword("");
@@ -132,11 +146,9 @@ function Profile() {
       logActivity(user?.id, "Changed account password");
       showToast("Password updated successfully!");
     } catch (err) {
-      console.error(err);
-      const errorMsg = err.response?.data?.message || "Failed to update password.";
-      addNotification(errorMsg, "error");
+      addNotification(getErrorMessage(err, "Failed to update password."), "error");
     } finally {
-      setLoading(false);
+      setSavingPassword(false);
     }
   };
 
@@ -144,7 +156,7 @@ function Profile() {
   const handleDeleteAccount = async (e) => {
     e.preventDefault();
     if (deleteConfirmText !== "DELETE") return;
-    setLoading(true);
+    setDeletingAccount(true);
     try {
       await deleteUserAccount(token);
       localStorage.removeItem("token");
@@ -152,16 +164,21 @@ function Profile() {
         localStorage.removeItem(`avatar_${user.id}`);
         localStorage.removeItem(`activities_${user.id}`);
       }
+      setShowDeleteModal(false);
+      setDeleteConfirmText("");
       logout();
       navigate("/register");
     } catch (err) {
-      console.error(err);
-      addNotification("Failed to delete account.", "error");
+      addNotification(getErrorMessage(err, "Failed to delete account."), "error");
     } finally {
-      setLoading(false);
-      setShowDeleteModal(false);
-      setDeleteConfirmText("");
+      setDeletingAccount(false);
     }
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingAccount) return;
+    setShowDeleteModal(false);
+    setDeleteConfirmText("");
   };
 
   /* ──────────────── Password strength ──────────────── */
@@ -190,6 +207,26 @@ function Profile() {
   if (name.trim()) completionPct += 30;
   if (user?.email) completionPct += 30;
   if (avatar) completionPct += 40;
+
+  if (initLoading) {
+    return (
+      <div className="acc-page fade-in-page">
+        <p style={{ color: "var(--color-text-muted)" }}>Loading account data...</p>
+      </div>
+    );
+  }
+
+  if (initError) {
+    return (
+      <div className="acc-page fade-in-page">
+        <div className="acc-page-header">
+          <h1>Account Center</h1>
+          <p>Manage your identity, security, and track your workspace productivity.</p>
+        </div>
+        <PageErrorBanner message={initError} onRetry={initProfile} />
+      </div>
+    );
+  }
 
   /* ══════════════════════════ RENDER ══════════════════════════ */
   return (
@@ -371,9 +408,9 @@ function Profile() {
               <button
                 type="submit"
                 className="acc-save-btn"
-                disabled={loading || name === user?.name}
+                disabled={savingName || name === user?.name}
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {savingName ? "Saving..." : "Save Changes"}
               </button>
             </form>
           </div>
@@ -446,12 +483,12 @@ function Profile() {
                 type="submit"
                 className="acc-save-btn"
                 disabled={
-                  loading ||
+                  savingPassword ||
                   !newPassword ||
                   newPassword !== confirmPassword
                 }
               >
-                {loading ? "Updating..." : "Update Password"}
+                {savingPassword ? "Updating..." : "Update Password"}
               </button>
             </form>
           </div>
@@ -512,7 +549,7 @@ function Profile() {
       {showDeleteModal && (
         <div
           className="acc-modal-backdrop"
-          onClick={() => setShowDeleteModal(false)}
+          onClick={closeDeleteModal}
         >
           <div
             className="acc-modal-card"
@@ -528,7 +565,8 @@ function Profile() {
               </div>
               <button
                 className="modal-x-btn"
-                onClick={() => setShowDeleteModal(false)}
+                onClick={closeDeleteModal}
+                disabled={deletingAccount}
               >
                 ×
               </button>
@@ -553,19 +591,17 @@ function Profile() {
                 <button
                   type="button"
                   className="modal-cancel-btn"
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setDeleteConfirmText("");
-                  }}
+                  onClick={closeDeleteModal}
+                  disabled={deletingAccount}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="modal-destroy-btn"
-                  disabled={loading || deleteConfirmText !== "DELETE"}
+                  disabled={deletingAccount || deleteConfirmText !== "DELETE"}
                 >
-                  {loading ? "Deleting..." : "Permanently Delete"}
+                  {deletingAccount ? "Deleting..." : "Permanently Delete"}
                 </button>
               </div>
             </form>

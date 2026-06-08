@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 import { getAllTasks } from "../../services/api";
+import { getErrorMessage } from "../../utils/getErrorMessage";
+import PageErrorBanner from "../../components/PageError/PageErrorBanner";
 import { TASK_STATUS } from "../../utils/taskStatus";
 import {
   ResponsiveContainer,
@@ -40,27 +43,47 @@ function ChartTooltip({ active, payload }) {
 
 function Analytics() {
   const { token } = useAuth();
+  const { addNotification } = useNotifications();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchTasks = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getAllTasks(token);
+      setTasks(data.tasks || []);
+    } catch (err) {
+      const msg = getErrorMessage(err, "Failed to load analytics.");
+      setError(msg);
+      addNotification(msg, "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [token, addNotification]);
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const data = await getAllTasks(token);
-        setTasks(data.tasks || []);
-      } catch (err) {
-        console.error("Failed to fetch analytics tasks:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTasks();
-  }, [token]);
+  }, [fetchTasks]);
 
   if (loading) {
     return (
       <div className="analytics-page">
         <p style={{ color: "var(--color-text-muted)" }}>Loading analytics...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="analytics-page">
+        <div className="analytics-header">
+          <h1>Analytics Overview</h1>
+          <p>Analyze details regarding your productivity and task distributions.</p>
+        </div>
+        <PageErrorBanner message={error} onRetry={fetchTasks} />
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { TASK_STATUS_OPTIONS } from "../../utils/taskStatus";
 import "./TaskModal.css";
 
@@ -26,6 +26,11 @@ function TaskModal({
     const firstInputRef = useRef(null);
     const isEdit = mode === "edit";
 
+    const handleClose = useCallback(() => {
+        if (loading) return;
+        onClose();
+    }, [loading, onClose]);
+
     /* ── Lock body scroll ── */
     useEffect(() => {
         if (isOpen) {
@@ -44,18 +49,18 @@ function TaskModal({
     useEffect(() => {
         if (!isOpen) return;
         const handleKeyDown = (e) => {
-            if (e.key === "Escape") onClose();
+            if (e.key === "Escape") handleClose();
         };
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isOpen, onClose]);
+    }, [isOpen, handleClose]);
 
     if (!isOpen) return null;
 
     return (
         <div
             className={`tm-backdrop ${isOpen ? "tm-backdrop--visible" : ""}`}
-            onClick={onClose}
+            onClick={handleClose}
             role="dialog"
             aria-modal="true"
             aria-label={isEdit ? "Edit Task" : "Create New Task"}
@@ -81,8 +86,9 @@ function TaskModal({
                     </div>
                     <button
                         className="tm-close-btn"
-                        onClick={onClose}
+                        onClick={handleClose}
                         aria-label="Close modal"
+                        disabled={loading}
                         type="button"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -237,7 +243,8 @@ function TaskModal({
                         <button
                             type="button"
                             className="tm-btn tm-btn-cancel"
-                            onClick={onClose}
+                            onClick={handleClose}
+                            disabled={loading}
                         >
                             Cancel
                         </button>

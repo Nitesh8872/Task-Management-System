@@ -1,14 +1,27 @@
 import axios from "axios";
 
-// Add Axios response interceptor for 401 errors
-axios.interceptors.response.use(
+const API_TIMEOUT_MS = 15000;
+
+const apiClient = axios.create({
+    timeout: API_TIMEOUT_MS,
+});
+
+// Session expiry: only redirect on 401 from protected routes (not login/register)
+apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
+        const status = error.response?.status;
+        const url = error.config?.url || "";
+        const isAuthEndpoint = /\/users\/(login|register)$/.test(url);
+
+        if (status === 401 && !isAuthEndpoint) {
             localStorage.removeItem("token");
             localStorage.setItem("showSessionExpired", "true");
-            window.location.href = "/login";
+            if (!window.location.pathname.includes("/login")) {
+                window.location.href = "/login";
+            }
         }
+
         return Promise.reject(error);
     }
 );
@@ -25,7 +38,7 @@ const TASK_API = `${API_BASE}/tasks`;
 
 // Register
 export const registerUser = async (userData) => {
-    const response = await axios.post(
+    const response = await apiClient.post(
         `${USER_API}/register`,
         userData
     );
@@ -35,7 +48,7 @@ export const registerUser = async (userData) => {
 
 // Login
 export const loginUser = async (userData) => {
-    const response = await axios.post(
+    const response = await apiClient.post(
         `${USER_API}/login`,
         userData
     );
@@ -46,7 +59,7 @@ export const loginUser = async (userData) => {
 // Get Current User
 export const getCurrentUser = async (token) => {
 
-    const response = await axios.get(
+    const response = await apiClient.get(
         `${USER_API}/me`,
         {
             headers: {
@@ -71,7 +84,7 @@ export const getTasks = async (
         sort = "newest",
     } = {}
 ) => {
-    const response = await axios.get(
+    const response = await apiClient.get(
         TASK_API,
         {
             params: {
@@ -94,7 +107,7 @@ export const getTasks = async (
 
 // Get all tasks (no pagination, for analytics & calendar)
 export const getAllTasks = async (token) => {
-    const response = await axios.get(TASK_API, {
+    const response = await apiClient.get(TASK_API, {
         params: {
             page: 1,
             limit: 1000,
@@ -109,7 +122,7 @@ export const getAllTasks = async (token) => {
 
 // Create Task
 export const createTask = async (taskData, token) => {
-    const response = await axios.post(
+    const response = await apiClient.post(
         TASK_API,
         taskData,
         {
@@ -124,7 +137,7 @@ export const createTask = async (taskData, token) => {
 
 // Delete Task
 export const deleteTask = async (taskId, token) => {
-    const response = await axios.delete(
+    const response = await apiClient.delete(
         `${TASK_API}/${taskId}`,
         {
             headers: {
@@ -142,7 +155,7 @@ export const updateTask = async (
     updatedData,
     token
 ) => {
-    const response = await axios.put(
+    const response = await apiClient.put(
         `${TASK_API}/${taskId}`,
         updatedData,
         {
@@ -157,7 +170,7 @@ export const updateTask = async (
 
 // Update User Profile
 export const updateUserProfile = async (userData, token) => {
-    const response = await axios.put(
+    const response = await apiClient.put(
         `${USER_API}/profile`,
         userData,
         {
@@ -172,7 +185,7 @@ export const updateUserProfile = async (userData, token) => {
 
 // Delete User Account
 export const deleteUserAccount = async (token) => {
-    const response = await axios.delete(
+    const response = await apiClient.delete(
         `${USER_API}/profile`,
         {
             headers: {

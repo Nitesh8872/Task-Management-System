@@ -5,6 +5,7 @@ const cors = require("cors");
 
 const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 dotenv.config();
 
@@ -34,6 +35,9 @@ app.use("/api/tasks", taskRoutes);
 app.get("/", (req, res) => {
     res.send("Task Management API");
 });
+
+app.use("/api", notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../services/api";
 import { useNotifications } from "../../context/NotificationContext";
+import { getErrorMessage } from "../../utils/getErrorMessage";
 import "./Register.css";
 
 function Register() {
@@ -15,9 +16,11 @@ function Register() {
     confirmPassword: "",
   });
 
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
+    setError("");
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -26,22 +29,22 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     const { name, email, password, confirmPassword } = formData;
 
-    // Validation
     if (!name.trim()) {
-      addNotification("Please enter your name.", "warning");
+      setError("Please enter your name.");
       return;
     }
 
     if (password.length < 6) {
-      addNotification("Password must be at least 6 characters long.", "warning");
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
     if (password !== confirmPassword) {
-      addNotification("Passwords do not match.", "error");
+      setError("Passwords do not match.");
       return;
     }
 
@@ -55,13 +58,12 @@ function Register() {
       };
 
       await registerUser(normalizedData);
-      
+
       addNotification("Account registered successfully! Please log in.", "success");
-      navigate("/login");
-    } catch (error) {
-      console.error("Registration failed:", error);
-      const errorMsg = 
-        error.response?.data?.message || "Registration failed. Please try again.";
+      navigate("/login", { state: { registered: true } });
+    } catch (err) {
+      const errorMsg = getErrorMessage(err, "Registration failed. Please try again.");
+      setError(errorMsg);
       addNotification(errorMsg, "error");
     } finally {
       setLoading(false);
@@ -78,6 +80,12 @@ function Register() {
         </div>
 
         <form className="register-form" onSubmit={handleSubmit}>
+          {error && (
+            <div className="auth-alert auth-alert--error" role="alert">
+              {error}
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="reg-name">Full Name</label>
             <input
@@ -134,8 +142,8 @@ function Register() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="register-submit-btn"
             disabled={loading}
           >
