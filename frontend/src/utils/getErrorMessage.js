@@ -23,7 +23,7 @@ export function getErrorMessage(error, fallback = "Something went wrong. Please 
     if (onDeployedFrontend && apiPointsToLocalhost) {
       return "App is misconfigured: API URL points to localhost. Set VITE_API_URL in Netlify and redeploy.";
     }
-    return `Cannot reach the API server (${API_CONFIG.base}). Check that the backend is running and try again.`;
+    return `Cannot reach the API server (${API_CONFIG.base}). The backend may be starting up — wait a few seconds and try again. If this persists, check Railway is running.`;
   }
 
   const msg = error.response?.data?.message;

@@ -45,6 +45,11 @@ app.use(
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 
+// Health check — use for Railway uptime / frontend connectivity probes
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ success: true, message: "API is running" });
+});
+
 // Test route
 app.get("/", (req, res) => {
     res.send("Task Management API");

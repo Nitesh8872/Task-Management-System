@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const API_TIMEOUT_MS = 15000;
+const API_TIMEOUT_MS = 30000;
+const RETRY_DELAY_MS = 2500;
+const MAX_RETRIES = 2;
 const DEBUG_API =
     import.meta.env.DEV || import.meta.env.VITE_DEBUG_API === "true";
 
@@ -36,6 +38,37 @@ function normalizePayload(data) {
         }
     }
     return data;
+}
+
+function isRetryableError(error) {
+    if (!error) return false;
+    if (error.code === "ERR_NETWORK" || !error.response) return true;
+    const status = error.response?.status;
+    return status === 502 || status === 503 || status === 504;
+}
+
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Retry transient network / gateway failures (common on Railway cold start). */
+async function withRetry(requestFn) {
+    let lastError;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            return await requestFn();
+        } catch (error) {
+            lastError = error;
+            if (!isRetryableError(error) || attempt === MAX_RETRIES) {
+                throw error;
+            }
+            if (DEBUG_API) {
+                console.warn(`[TaskHub API] Retry ${attempt + 1}/${MAX_RETRIES} after error:`, error.code);
+            }
+            await wait(RETRY_DELAY_MS);
+        }
+    }
+    throw lastError;
 }
 
 function logRequest(method, url, payload, headers) {
@@ -130,13 +163,17 @@ if (DEBUG_API) {
 
 // Register — POST /api/users/register
 export const registerUser = async (userData) => {
-    const response = await apiClient.post(`${USER_API}/register`, userData);
+    const response = await withRetry(() =>
+        apiClient.post(`${USER_API}/register`, userData)
+    );
     return response.data;
 };
 
 // Login — POST /api/users/login
 export const loginUser = async (userData) => {
-    const response = await apiClient.post(`${USER_API}/login`, userData);
+    const response = await withRetry(() =>
+        apiClient.post(`${USER_API}/login`, userData)
+    );
     return response.data;
 };
 
