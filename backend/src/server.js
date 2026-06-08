@@ -21,7 +21,7 @@ connectDB();
 
 const app = express();
 
-// for connection b/w backend and frontend
+// CORS — open policy (verified: Netlify → Railway preflight returns Access-Control-Allow-Origin: *)
 app.use(cors());
 
 // Middleware to parse JSON
@@ -40,4 +40,8 @@ app.use("/api", notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const HOST = "0.0.0.0";
+
+app.listen(PORT, HOST, () => {
+    console.log(`Server running on ${HOST}:${PORT}`);
+});
