@@ -13,10 +13,15 @@ axios.interceptors.response.use(
     }
 );
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+/** Server root or API prefix — `/api` is appended only when missing. */
+function resolveApiBase(url) {
+    const root = (url || "http://localhost:5000").replace(/\/+$/, "");
+    return root.endsWith("/api") ? root : `${root}/api`;
+}
 
-const USER_API = `${BASE_URL}/api/users`;
-const TASK_API = `${BASE_URL}/api/tasks`;
+const API_BASE = resolveApiBase(import.meta.env.VITE_API_URL);
+const USER_API = `${API_BASE}/users`;
+const TASK_API = `${API_BASE}/tasks`;
 
 // Register
 export const registerUser = async (userData) => {
