@@ -6,7 +6,12 @@
 
 ## 🖥️ Live Preview
 
-> Run locally using the setup instructions below.
+> Frontend (Netlify):
+https://tranquil-baklava-d4d3eb.netlify.app
+
+> Backend API (Railway):
+https://task-management-system-production-0d38.up.railway.app/
+
 
 ---
 
