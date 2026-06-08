@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 // Register User
 const registerUser = async (req, res) => {
     try {
+        console.log("Parsed Body (register):", req.body);
         const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
@@ -54,6 +55,7 @@ const registerUser = async (req, res) => {
 // Login User
 const loginUser = async (req, res) => {
     try {
+        console.log("Parsed Body (login):", req.body);
         const { email, password } = req.body;
 
         if (!email || !password) {

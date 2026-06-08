@@ -6,6 +6,7 @@ const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const { requestDebugMiddleware } = require("./middleware/requestDebugMiddleware");
 
 dotenv.config();
 
@@ -24,8 +25,21 @@ const app = express();
 // CORS — open policy (verified: Netlify → Railway preflight returns Access-Control-Allow-Origin: *)
 app.use(cors());
 
-// Middleware to parse JSON
-app.use(express.json());
+app.use(requestDebugMiddleware);
+
+// Parse JSON — log raw body on parse failure via verify hook
+app.use(
+    express.json({
+        verify: (req, res, buf) => {
+            if (buf && buf.length > 0) {
+                const raw = buf.toString("utf8");
+                req.rawBody = raw;
+                console.log("Raw Body:", raw);
+                console.log("Headers:", req.headers);
+            }
+        },
+    })
+);
 
 // Connect user routes
 app.use("/api/users", userRoutes);
